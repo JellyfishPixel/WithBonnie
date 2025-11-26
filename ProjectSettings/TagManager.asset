@@ -3,7 +3,13 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 3
-  tags: []
+  tags:
+  - pickable
+  - CinemachineTarget
+  - Boxlid
+  - Box
+  - BoxInteract
+  - Reciept
   layers:
   - Default
   - TransparentFX
@@ -11,7 +17,7 @@ TagManager:
   - 
   - Water
   - UI
-  - 
+  - holdLayer
   - 
   - 
   - 

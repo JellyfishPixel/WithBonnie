@@ -1,0 +1,296 @@
+﻿using System.Collections.Generic;
+using UnityEngine;
+
+public class ReceiptClickPlace : MonoBehaviour
+{
+    [Header("Snap Preview")]
+    public float previewDetectRadius = 0.12f;
+    public bool snapAlwaysHorizontal = true;
+    public Vector3 placementEulerOffset = Vector3.zero;
+
+    [Header("Pick / Hold")]
+    public float maxPickDistance = 3.5f;
+    public string pickupTag = "Reciept";
+    public Transform holdPoint;        // ถ้าไม่ตั้ง จะไปดึงจาก PlayerInteractionSystem
+    public Collider playerCollider;    // ถ้าไม่ตั้ง จะไปดึง Collider บน Player
+
+    // runtime
+    private Camera rayCamera;
+    private PlayerInteractionSystem interactor;
+    private BoxCore currentBox;
+    private ReceiptItem held;
+    private readonly List<Collider> heldCols = new List<Collider>();
+
+    // preview state
+    private bool snappingPreview;
+    private SnapArea previewArea;
+    private SnapArea lastPreviewArea;
+    private Vector3 previewWorld;
+    private Quaternion previewRot;
+
+    void Awake()
+    {
+        // หา PlayerInteractionSystem & กล้อง จากระบบใหม่
+        interactor = FindAnyObjectByType<PlayerInteractionSystem>();
+
+        if (interactor != null)
+        {
+            if (!rayCamera) rayCamera = interactor.playerCamera;
+            if (!holdPoint) holdPoint = interactor.holdPoint;
+
+            if (!playerCollider)
+                playerCollider = interactor.GetComponent<Collider>();
+        }
+
+        if (!rayCamera)
+            rayCamera = Camera.main;
+
+        if (!rayCamera)
+            Debug.LogWarning("[ReceiptClickPlace] No camera assigned (rayCamera is null).");
+    }
+
+    void Update()
+    {
+        // ดึงกล่องปัจจุบันเสมอ (รองรับกล่อง spawn ใหม่)
+        if (BoxCore.Current != null)
+            currentBox = BoxCore.Current;
+
+        // ถ้ายังไม่มีกล่อง → ไม่ต้องทำอะไร
+        if (!currentBox) return;
+
+        // ถ้าไม่มีใบเสร็จในมือ
+        if (held == null)
+        {
+            if (Input.GetMouseButtonDown(0))
+                TryPick();
+            return;
+        }
+
+        // มีใบเสร็จในมือแล้ว → อัปเดต preview
+        UpdateSnapPreview();
+
+        // ถ้าไม่ได้ snap กับพื้นที่แปะ → ใบเสร็จลอยที่ holdPoint
+        if (!snappingPreview && holdPoint)
+        {
+            held.transform.position = holdPoint.position;
+            if (rayCamera)
+                held.transform.rotation = Quaternion.LookRotation(rayCamera.transform.forward, Vector3.up);
+        }
+
+        // กดคลิกซ้ายเพื่อวางจริง เมื่ออยู่ใน preview ที่ valid
+        if (Input.GetMouseButtonDown(0) && snappingPreview && previewArea != null)
+        {
+            FinalizePlace(previewArea, previewWorld, previewRot);
+
+            // แจ้งกล่องว่ามีลาเบลแล้ว (ถ้าคุณมี method นี้ใน BoxCore)
+            ///currentBox?.NotifyLabelPasted();
+        }
+    }
+
+    // ==================== PREVIEW ====================
+
+    void UpdateSnapPreview()
+    {
+        snappingPreview = false;
+        previewArea = null;
+        if (!held) return;
+
+        var hits = Physics.OverlapSphere(
+            held.transform.position,
+            previewDetectRadius,
+            ~0,
+            QueryTriggerInteraction.Collide
+        );
+
+        if (hits == null || hits.Length == 0)
+        {
+            if (lastPreviewArea) lastPreviewArea.ShowGrid(false);
+            lastPreviewArea = null;
+            return;
+        }
+
+        float bestDist = float.MaxValue;
+        SnapArea bestArea = null;
+        BoxCollider bestCol = null;
+
+        foreach (var c in hits)
+        {
+            var a = c.GetComponentInParent<SnapArea>();
+            if (!a) continue;
+
+            var box = a.area ? a.area : a.GetComponent<BoxCollider>();
+            if (!box) continue;
+
+            float d = (held.transform.position - box.bounds.center).sqrMagnitude;
+            if (d < bestDist)
+            {
+                bestDist = d;
+                bestArea = a;
+                bestCol = box;
+            }
+        }
+
+        if (!bestArea || !bestCol)
+        {
+            if (lastPreviewArea) lastPreviewArea.ShowGrid(false);
+            lastPreviewArea = null;
+            return;
+        }
+
+        if (!rayCamera)
+        {
+            Debug.LogWarning("[ReceiptClickPlace] rayCamera is null.");
+            return;
+        }
+
+        // ยิง ray จากกล้องเข้าหาพื้นที่วาง
+        Ray ray = new Ray(rayCamera.transform.position, rayCamera.transform.forward);
+        Vector3 samplePoint;
+
+        if (bestCol.Raycast(ray, out var hitOnArea, maxPickDistance))
+        {
+            samplePoint = hitOnArea.point;
+        }
+        else
+        {
+            var t = bestCol.transform;
+            Plane topPlane = new Plane(t.up, t.TransformPoint(new Vector3(0, bestCol.size.y * 0.5f, 0)));
+            if (!topPlane.Raycast(ray, out float enter))
+            {
+                if (lastPreviewArea) lastPreviewArea.ShowGrid(false);
+                lastPreviewArea = null;
+                return;
+            }
+            samplePoint = ray.GetPoint(enter);
+        }
+
+        Transform tf = bestCol.transform;
+        Vector3 local = tf.InverseTransformPoint(samplePoint);
+        Vector3 half = bestCol.bounds.extents;
+
+        // ให้แปะบนผิวบน
+        local.y = +half.y;
+
+        // ขอบกันหลุดออกนอกขอบกล่อง
+        float mx = bestArea.margin + held.halfSizeXZ.x;
+        float mz = bestArea.margin + held.halfSizeXZ.y;
+
+        local.x = Mathf.Clamp(local.x, -half.x + mx, half.x - mx);
+        local.z = Mathf.Clamp(local.z, -half.z + mz, half.z - mz);
+
+        // snap เข้ากริดถ้ามี
+        if (bestArea.gridStep > 0.0001f)
+        {
+            local.x = Mathf.Round(local.x / bestArea.gridStep) * bestArea.gridStep;
+            local.z = Mathf.Round(local.z / bestArea.gridStep) * bestArea.gridStep;
+        }
+
+        previewWorld = tf.TransformPoint(local + new Vector3(0, held.surfaceOffset, 0));
+        Quaternion baseRot = snapAlwaysHorizontal
+            ? Quaternion.LookRotation(tf.forward, tf.up)
+            : held.transform.rotation;
+        previewRot = baseRot * Quaternion.Euler(placementEulerOffset);
+
+        held.transform.SetPositionAndRotation(previewWorld, previewRot);
+
+        snappingPreview = true;
+        previewArea = bestArea;
+
+        if (lastPreviewArea != previewArea)
+        {
+            if (lastPreviewArea) lastPreviewArea.ShowGrid(false);
+            previewArea.ShowGrid(true);
+            lastPreviewArea = previewArea;
+        }
+    }
+
+    // ==================== PICK ====================
+
+    void TryPick()
+    {
+        // 1) ต้องมีกล่อง และฝากล่อง+เทปเสร็จก่อน
+        if (!currentBox) return;
+
+        var tape = currentBox.GetComponentInChildren<TapeDragScaler>();
+        if (!tape || !tape.isTapeDone)
+        {
+            // ถ้าอยากให้แค่ปิดฝาก็แปะได้ ให้เอาเช็คเทปออก
+            Debug.Log("ยังลากเทปปิดกล่องไม่เสร็จ แปะลาเบลไม่ได้");
+            return;
+        }
+
+        if (!rayCamera) return;
+
+        Ray ray = rayCamera.ScreenPointToRay(Input.mousePosition);
+
+        // ยิงเรย์เช็คของที่คลิก
+        if (!Physics.Raycast(ray, out var hit, maxPickDistance, ~0, QueryTriggerInteraction.Ignore))
+            return;
+
+        var rec = hit.collider.GetComponentInParent<ReceiptItem>();
+        if (!rec) return;
+
+        // เช็คแท็กป้องกันหยิบของอื่น
+        if (!string.IsNullOrEmpty(pickupTag) && !rec.CompareTag(pickupTag))
+            return;
+
+        // ถ้าเป็นลูก SnapArea แล้ว แปลว่าแปะแล้ว -> ไม่ให้หยิบ
+        if (rec.transform.GetComponentInParent<SnapArea>() != null)
+            return;
+
+        held = rec;
+
+        if (held.rb)
+        {
+            held.rb.isKinematic = true;
+            held.rb.useGravity = false;
+            held.rb.detectCollisions = true;
+        }
+
+        heldCols.Clear();
+        held.GetComponentsInChildren(true, heldCols);
+
+        if (playerCollider)
+        {
+            for (int i = 0; i < heldCols.Count; i++)
+                Physics.IgnoreCollision(heldCols[i], playerCollider, true);
+        }
+    }
+
+    // ==================== PLACE ====================
+
+    void FinalizePlace(SnapArea area, Vector3 worldPos, Quaternion rot)
+    {
+        if (!held) return;
+
+        var boxCol = area.area ? area.area : area.GetComponent<BoxCollider>();
+        if (!boxCol) return;
+
+        held.transform.SetPositionAndRotation(worldPos, rot);
+        held.transform.SetParent(area.transform, true);
+
+        if (held.rb)
+        {
+            held.rb.isKinematic = true;
+            held.rb.useGravity = false;
+        }
+
+        if (playerCollider)
+        {
+            heldCols.Clear();
+            held.GetComponentsInChildren(true, heldCols);
+            for (int i = 0; i < heldCols.Count; i++)
+                Physics.IgnoreCollision(heldCols[i], playerCollider, false);
+        }
+
+        area.ShowGrid(false);
+        if (lastPreviewArea && lastPreviewArea != area)
+            lastPreviewArea.ShowGrid(false);
+
+        snappingPreview = false;
+        previewArea = null;
+        lastPreviewArea = null;
+        heldCols.Clear();
+        held = null;
+    }
+}
