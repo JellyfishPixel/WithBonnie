@@ -70,7 +70,7 @@ public class ReceiptLabelSnap : MonoBehaviour, IInteractable
             FinalizePlace(previewArea, previewWorld, previewRot);
 
             // แจ้ง BoxCore ว่ามีลาเบลแล้ว (ถ้าคุณมี method นี้)
-           // currentBox.NotifyLabelPasted();
+           currentBox.NotifyLabelPasted();
 
             isHeld = false;
             holder = null;

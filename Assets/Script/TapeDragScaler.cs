@@ -31,14 +31,14 @@ public class TapeDragScaler : MonoBehaviour
 
     BoxCore currentBox;
 
-    //public GameObject cube;
+    public GameObject cube;
     public void SelectDispenser(TapeDispenser dispenser)
     {
         selectedDispenser = dispenser;
         Debug.Log($"[TapeDragScaler] Dispenser selected: {dispenser.name}");
 
         //if (cube != null)
-        //    cube.SetActive(true);
+         cube.SetActive(true);
     }
 
 
@@ -73,7 +73,7 @@ public class TapeDragScaler : MonoBehaviour
                 if (dispenser != null)
                 {
                     selectedDispenser = dispenser;
-                    ///cube.SetActive(true);
+                    cube.SetActive(true);
 
                 }
             }
@@ -146,7 +146,11 @@ public class TapeDragScaler : MonoBehaviour
             if (lastWorldLength > 0f)
             {
                 isTapeDone = true;
-               // GameObject.Destroy(cube);
+
+                if (BoxCore.Current != null)
+                    BoxCore.Current.NotifyTapeDone();
+
+                GameObject.Destroy(cube);
             }
         }
     }

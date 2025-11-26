@@ -171,6 +171,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3777185224314703559, guid: f5a895ec491b22c4eb76c283e60c21f4, type: 3}
+      propertyPath: debugDrawGizmos
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -1375,7 +1379,7 @@ Transform:
   m_GameObject: {fileID: 1507732943}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 1.458}
+  m_LocalPosition: {x: 0, y: 0, z: 1.25}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1538,7 +1542,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8997996947095583982, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 1.803
       objectReference: {fileID: 0}
     - target: {fileID: 8997996947095583982, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1546,7 +1550,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8997996947095583982, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -2.9
       objectReference: {fileID: 0}
     - target: {fileID: 8997996947095583982, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}
       propertyPath: m_LocalRotation.w
@@ -1723,8 +1727,8 @@ GameObject:
   - component: {fileID: 1788591884}
   - component: {fileID: 1788591883}
   m_Layer: 0
-  m_Name: Cube (3)
-  m_TagString: Untagged
+  m_Name: Lable
+  m_TagString: Reciept
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -1741,6 +1745,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 5fc47301b6d17c94bade5eb33dc84ca1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  halfSizeXZ: {x: 0.05, y: 0.08}
+  surfaceOffset: 0.001
+  rb: {fileID: 1788591884}
 --- !u!54 &1788591884
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -1780,6 +1787,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 32f05bf17ef333343945d4cf5db7a755, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  previewDetectRadius: 0.12
+  snapAlwaysHorizontal: 1
+  placementEulerOffset: {x: 0, y: 0, z: 0}
+  maxPickDistance: 3.5
+  pickupTag: Reciept
 --- !u!65 &1788591886
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -1893,7 +1905,7 @@ MonoBehaviour:
   interactKey: 101
   interactDistance: 3
   pickupKey: 323
-  pickupDistance: 4
+  pickupDistance: 2.5
   pickableTag: pickable
   holdPoint: {fileID: 1507732944}
   holdLayerName: holdLayer

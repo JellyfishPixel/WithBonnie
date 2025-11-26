@@ -5,8 +5,9 @@ public enum BoxStep
     Empty,
     ItemInside,
     BubbleDone,
-    Closed
-    // ถ้าจะเพิ่ม Tape / Label / Ready ค่อยต่อได้ทีหลัง
+    Closed,
+    Taped,      // ✅ เทปเรียบร้อย
+    Labeled     // ✅ แปะลาเบลแล้ว (กล่องพร้อมยก)
 }
 
 [RequireComponent(typeof(Collider))]
@@ -14,9 +15,15 @@ public enum BoxStep
 public class BoxCore : MonoBehaviour
 {
     [Header("Item Detection")]
-    public string pickableTag = "pickable";
-    public Collider itemArea;         
+    public string pickableTag = "pickable";   // แท็กของของข้างในกล่อง
+    public Collider itemArea;
+
+    [Header("Pickup Settings")]
+    [Tooltip("แท็กที่จะใช้กับกล่อง เมื่อพร้อมให้ผู้เล่นยกได้")]
+    public string boxPickupTag = "pickable";
+
     public static BoxCore Current { get; private set; }
+
     [Header("Lids")]
     public SmoothLidClose leftLid;
     public SmoothLidClose rightLid;
@@ -26,11 +33,15 @@ public class BoxCore : MonoBehaviour
     [SerializeField] private bool hasItem = false;
     [SerializeField] private bool bubbleFull = false;
     [SerializeField] private bool lidsClosed = false;
+    [SerializeField] private bool tapeDone = false;
+    [SerializeField] private bool labelDone = false;
 
     public BoxStep Step => step;
     public bool HasItem => hasItem;
     public bool BubbleFull => bubbleFull;
     public bool LidsClosed => lidsClosed;
+    public bool TapeDone => tapeDone;
+    public bool LabelDone => labelDone;
 
     public bool IsFinsihedClose => lidsClosed;   // เผื่อใช้กับเทปเดิม
 
@@ -57,18 +68,18 @@ public class BoxCore : MonoBehaviour
 
     void OnDestroy()
     {
-        // ถ้ากล่องนี้โดนลบ และมันคือ Current อยู่ ให้เคลียร์
         if (Current == this)
             Current = null;
     }
 
-    // หรือถ้าคุณอยากสลับ current box ด้วยตัวเองทีหลัง
     public void SetAsCurrent()
     {
         Current = this;
     }
+
     void Update()
     {
+        // อัปเดตฝาปิด
         if (leftLid && rightLid)
         {
             lidsClosed = leftLid.isClosed && rightLid.isClosed;
@@ -107,8 +118,10 @@ public class BoxCore : MonoBehaviour
         Bounds b = itemArea.bounds;
         Collider[] contents = Physics.OverlapBox(b.center, b.extents, Quaternion.identity);
         foreach (var col in contents)
+        {
             if (col.CompareTag(pickableTag))
                 return true;
+        }
         return false;
     }
 
@@ -156,6 +169,51 @@ public class BoxCore : MonoBehaviour
             return false;
         }
         return true;
+    }
+
+    /// <summary>
+    /// เรียกจาก TapeDragScaler เมื่อเทปทำเสร็จ
+    /// </summary>
+    public void NotifyTapeDone()
+    {
+        tapeDone = true;
+        if (step < BoxStep.Taped)
+            step = BoxStep.Taped;
+
+        Debug.Log("[BoxCore] Tape done.");
+    }
+
+    /// <summary>
+    /// เรียกจากสคริปต์ลาเบล เมื่อแปะลาเบลเสร็จ
+    /// </summary>
+    public void NotifyLabelPasted()
+    {
+        labelDone = true;
+        if (step < BoxStep.Labeled)
+            step = BoxStep.Labeled;
+
+        Debug.Log("[BoxCore] Label pasted → box is now pickable.");
+
+        MakeBoxPickable();
+    }
+
+    /// <summary>
+    /// ให้กล่องพร้อมถูกยก: เปิดฟิสิกส์ + เปลี่ยน tag
+    /// </summary>
+    void MakeBoxPickable()
+    {
+        // เปิดฟิสิกส์ให้กล่องตก/ถูกยกได้
+        rb.isKinematic = false;
+        rb.useGravity = true;
+
+        // เปลี่ยนแท็กให้ไปอยู่ในระบบ pickup ตามที่คุณใช้
+        if (!string.IsNullOrEmpty(boxPickupTag))
+            gameObject.tag = boxPickupTag;
+
+        // ถ้าคุณมีระบบ BoxSpawner ที่ต้อง spawn กล่องใหม่ สามารถไปเคลียร์ flag ตรงนั้นเพิ่มได้
+        // เช่น:
+        // var spawner = FindAnyObjectByType<BoxSpawner>();
+        // if (spawner) spawner.hasSpawnedBox = false;
     }
 
     #endregion
