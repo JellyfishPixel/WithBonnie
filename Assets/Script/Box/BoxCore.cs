@@ -6,8 +6,8 @@ public enum BoxStep
     ItemInside,
     BubbleDone,
     Closed,
-    Taped,      // ✅ เทปเรียบร้อย
-    Labeled     // ✅ แปะลาเบลแล้ว (กล่องพร้อมยก)
+    Taped,    
+    Labeled     
 }
 
 [RequireComponent(typeof(Collider))]
@@ -15,7 +15,7 @@ public enum BoxStep
 public class BoxCore : MonoBehaviour
 {
     [Header("Item Detection")]
-    public string pickableTag = "pickable";   // แท็กของของข้างในกล่อง
+    public string pickableTag = "pickable"; 
     public Collider itemArea;
 
     [Header("Pickup Settings")]
@@ -48,11 +48,14 @@ public class BoxCore : MonoBehaviour
     Rigidbody rb;
 
     [Header("Box Type")]
-    public BoxKind boxType = BoxKind.Small; 
+    public BoxKind boxType = BoxKind.Small;
 
-    [Header("Item Data")]
+    [Header("Damage Protection")]
+    [Tooltip("1 = แรงเต็ม, 0.3 = กล่องช่วยรับแรงไป 70% ของของข้างใน")]
+    public float innerItemDamageMultiplier = 0.3f;
+
     [SerializeField] private DeliveryItemData currentItemData;
-    [SerializeField] private DeliveryItemInstance currentItemInstance;
+    [SerializeField] private DeliveryItemInstance currentItemInstance; 
 
     public DeliveryItemData CurrentItemData => currentItemData;
     public DeliveryItemInstance CurrentItemInstance => currentItemInstance;
@@ -99,6 +102,17 @@ public class BoxCore : MonoBehaviour
         }
     }
 
+    void OnCollisionEnter(Collision collision)
+    {
+        if (!currentItemInstance) return;
+
+        // ตัวอย่าง: คิดดาเมจเฉพาะกล่องที่ปิดฝาแล้ว
+        if (step < BoxStep.Closed) return;
+
+        float impact = collision.relativeVelocity.magnitude;
+        currentItemInstance.ApplyImpactFromContainer(impact, innerItemDamageMultiplier);
+    }
+
 
 
     void OnTriggerEnter(Collider other)
@@ -113,7 +127,7 @@ public class BoxCore : MonoBehaviour
         var itemInst = other.GetComponentInParent<DeliveryItemInstance>();
         if (itemInst && itemInst.data)
         {
-            // ❶ เช็คว่ากล่องประเภทนี้ใส่ของนี้ได้ไหม
+           
             if (!CanAccept(itemInst.data))
             {
                 Debug.LogWarning($"[BoxCore] Item {itemInst.data.itemName} ใช้กับกล่อง {boxType} ไม่ได้");
@@ -122,13 +136,14 @@ public class BoxCore : MonoBehaviour
 
             currentItemInstance = itemInst;
             currentItemData = itemInst.data;
+            gameObject.tag = "Box";
         }
     }
 
     public bool CanAccept(DeliveryItemData data)
     {
         if (data == null || data.allowedBoxTypes == null || data.allowedBoxTypes.Length == 0)
-            return true; // ไม่กำหนด = ใส่ได้ทุกกล่อง
+            return true; 
 
         foreach (var allowed in data.allowedBoxTypes)
             if (allowed == boxType) return true;
