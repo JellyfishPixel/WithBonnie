@@ -43,83 +43,58 @@ public class DeliveryItemInstance : MonoBehaviour
     {
         if (data == null || isBroken) return;
 
-        //// ถ้าโดนน้ำและไอเท็มนี้พังเมื่อโดนน้ำ
-        //if (collision.collider.CompareTag("Water") && data.breaksOnWater)
-        //{
-        //    ApplyDamage(999f); // ให้ดาเมจเยอะ ๆ เพื่อให้คุณภาพเหลือ 0
-        //    Debug.Log($"[ItemInstance] {data.itemName} พังเพราะโดนน้ำ");
-        //    return;
-        //}
+        // ถ้าอยากใช้ logic โดนน้ำค่อยมาเปิดทีหลัง
+        // if (collision.collider.CompareTag("Water") && data.breaksOnWater)
+        // {
+        //     ApplyDamage(999f);
+        //     Debug.Log($"[ItemInstance] {data.itemName} พังเพราะโดนน้ำ");
+        //     return;
+        // }
 
-        // ใช้ความเร็วการชนของ Rigidbody ในการคำนวนดาเมจ
-        float impact = collision.relativeVelocity.magnitude;
-
-        // ถ้าชนเบากว่า safeImpactVelocity ให้ถือว่าไม่เสียหาย
-        if (impact <= data.safeImpactVelocity)
-            return;
-
-        float over = impact - data.safeImpactVelocity;
-        float damage = over * data.damagePerVelocity;
-
-        if (damage > 0f)
-        {
-            ApplyDamage(damage);
-            Debug.Log($"[ItemInstance] {data.itemName} ชนแรง impact={impact:F2}, damage={damage:F1}, quality={currentQuality:F1}");
-        }
-    }
-
-    // -------------------------------------------------------
-    // ให้ Container (เช่น กล่อง / อินเวนทอรีผู้เล่น) ส่งดาเมจจากแรงชน/ตกมาให้
-    // -------------------------------------------------------
-    /// <summary>
-    /// ใช้เวลาของอยู่ "ข้างใน" อะไรสักอย่าง (เช่น กล่อง/ตัวผู้เล่น)
-    /// แล้ว container นั้นเป็นคนคำนวนแรงชน/ความสูงตก แทนไอเท็มเอง
-    /// protectionMultiplier:
-    ///   - 1   = โดนดาเมจเต็ม
-    ///   - 0.3 = โดนดาเมจ 30% (กล่องช่วยรับแรงไป 70%)
-    /// </summary>
-    public void ApplyImpactFromContainer(float impactVelocity, float protectionMultiplier)
-    {
-        if (data == null || isBroken) return;
-
-        if (impactVelocity <= data.safeImpactVelocity)
-            return;
-
-        float over = impactVelocity - data.safeImpactVelocity;
-        float damage = over * data.damagePerVelocity * Mathf.Max(0f, protectionMultiplier);
-
-        if (damage > 0f)
-        {
-            ApplyDamage(damage);
-            Debug.Log($"[ItemInstance] {data.itemName} โดนดาเมจจาก Container impact={impactVelocity:F2}, damage={damage:F1}, quality={currentQuality:F1}");
-        }
-    }
-
-    /// <summary>
-    /// ใช้เวลาคำนวนจาก "ความสูงที่ตก" โดยตรง (เช่น ตอนอยู่ใน inventory ผู้เล่น)
-    /// จะไปคำนวณความเร็วโดยประมาณเองจากความสูง แล้วส่งเข้าระบบดาเมจ
-    /// </summary>
-    public void ApplyFallHeight(float fallHeight, float protectionMultiplier)
-    {
-        if (data == null || isBroken) return;
-
-        // ไม่ถึงความสูงขั้นต่ำที่ตั้งไว้ → ไม่โดนดาเมจ
-        if (fallHeight < data.minFallHeightForDamage)
-            return;
-
-        // แปลงความสูง h → ความเร็วกระแทกประมาณ v = sqrt(2gh)
+        // ใช้ความเร็วชนแปลงเป็น "ความสูงที่ตก" โดยประมาณ
+        float v = collision.relativeVelocity.magnitude;
         float g = 9.81f;
-        float impactVelocity = Mathf.Sqrt(2f * g * fallHeight);
+        float approxHeight = (v * v) / (2f * g);
 
-        ApplyImpactFromContainer(impactVelocity, protectionMultiplier);
+        // ของเปล่า → divisor = 1 (ดาเมจเต็ม)
+        ApplyFallHeight(approxHeight, 1);
     }
 
-    // -------------------------------------------------------
-    // ฟังก์ชันกลางไว้ลดคุณภาพ + เช็คสถานะ พัง/เสียหาย
-    // -------------------------------------------------------
-    /// <summary>
-    /// หักคุณภาพตาม amount และอัปเดต isDamaged / isBroken ตาม threshold ใน Data
-    /// </summary>
+
+    public void ApplyFallHeight(float fallHeight, int damageDivisor)
+    {
+        if (data == null || isBroken) return;
+
+        // ปัดเป็นเมตร (จำนวนเต็ม)
+        int meters = Mathf.RoundToInt(fallHeight);
+        if (meters < data.minFallHeightMeter) return;
+
+        int perMeter = Mathf.Max(0, data.damagePerMeter);
+        int raw = perMeter * meters;
+
+        int divisor = Mathf.Max(1, damageDivisor); // อย่างน้อย 1
+        int dmg = raw / divisor;
+        if (dmg <= 0) dmg = 1;
+
+        ApplyDamage(dmg);
+
+        Debug.Log($"[ItemInstance] {data.itemName} fallHeight≈{fallHeight:F2}m ({meters}m), perMeter={perMeter}, divisor={divisor}, dmg={dmg}, Q={currentQuality:F0}");
+    }
+
+    public int CalculateEffectiveDeadlineDays(int baseDays, bool inColdBox)
+    {
+        if (data == null) return baseDays;
+
+        if (!data.requiresCold) return baseDays;
+
+        // ต้องการกล่องเย็น
+        if (inColdBox) return baseDays;
+
+        // ใส่กล่องธรรมดา → เหลือ 1/3 (อย่างน้อย 1 วัน)
+        int reduced = baseDays / 3;
+        return Mathf.Max(1, reduced);
+    }
+
     public void ApplyDamage(float amount)
     {
         if (amount <= 0f) return;
@@ -127,33 +102,20 @@ public class DeliveryItemInstance : MonoBehaviour
         currentQuality -= amount;
         currentQuality = Mathf.Clamp(currentQuality, 0f, 100f);
 
-        // ถ้ามี Data ให้ใช้ threshold ใน Data มาช่วยตัดสินสถานะ
         if (data != null)
         {
-            // ถ้าคุณภาพต่ำกว่า damagedThreshold = ถือว่า "เสียหาย"
             isDamaged = currentQuality <= data.damagedThreshold;
-
-            // ถ้าคุณภาพต่ำกว่า brokenThreshold = ถือว่า "แตก/พัง"
             isBroken = currentQuality <= data.brokenThreshold;
         }
         else
         {
-            // กรณีไม่มี Data สำรอง logic ง่าย ๆ
             isDamaged = currentQuality < 100f;
             isBroken = currentQuality <= 0f;
         }
     }
 
-    // -------------------------------------------------------
-    // ใช้คำนวณเงินตอนส่งของ
-    // -------------------------------------------------------
-    /// <summary>
-    /// คำนวณเงินที่จะได้จากของชิ้นนี้ เมื่อส่งเสร็จ
-    /// - ใช้ baseReward จาก Data เป็นหลัก
-    /// - quality ต่ำ → ได้เงินน้อยลง
-    /// - ส่งเกินกำหนดวัน → หักเพิ่ม
-    /// - ถ้าพัง (isBroken) → ได้ 0
-    /// </summary>
+
+
     public int CalculateReward(int dayCreated, int dayDelivered)
     {
         if (data == null) return 0;

@@ -12,8 +12,9 @@ public class BoxInventory : MonoBehaviour
     public GameObject boxPrefab;
 
     [Header("Carry Protection")]
-    [Tooltip("ตัวคูณดาเมจตอนอยู่ในตัวผู้เล่น 1 = ดาเมจเต็ม, 0.3 = 30% ของดาเมจ")]
-    public float carriedDamageMultiplier = 0.3f;
+    [Tooltip("ตัวหารดาเมจตอนอยู่ใน inventory (2 = ครึ่งหนึ่ง, 3 = เหลือ 1/3)")]
+    public int inventoryDamageDivisor = 2;
+
 
     [Serializable]
     public class BoxSlot
@@ -24,6 +25,7 @@ public class BoxInventory : MonoBehaviour
         [Range(0, 100)]
         public float itemQuality = 100f;
     }
+
 
     public BoxSlot[] slots;
 
@@ -141,54 +143,30 @@ public class BoxInventory : MonoBehaviour
     /// </summary>
     public void ApplyFallDamageToAll(float fallHeight)
     {
-        if (fallHeight <= 0f)
-        {
-            Debug.Log($"[BoxInventory] ApplyFallDamageToAll: fallHeight={fallHeight:F2} → ไม่คิดดาเมจ");
-            return;
-        }
-
-        Debug.Log($"[BoxInventory] ApplyFallDamageToAll: เริ่มคำนวนจากความสูงตก={fallHeight:F2} m");
+        int meters = Mathf.RoundToInt(fallHeight);
+        if (meters <= 0) return;
 
         for (int i = 0; i < slots.Length; i++)
         {
-            var slot = slots[i];
-            if (!slot.hasBox || slot.itemData == null) continue;
+            var s = slots[i];
+            if (!s.hasBox || s.itemData == null) continue;
 
-            var data = slot.itemData;
+            var data = s.itemData;
 
-            // ❗ เช็คว่าไอเท็มนี้กำหนด minFallHeightForDamage ไว้เท่าไหร่
-            if (fallHeight < data.minFallHeightForDamage)
-            {
-                Debug.Log($"[BoxInventory] Slot {i} {data.itemName}: ตก {fallHeight:F2} < minFallHeight {data.minFallHeightForDamage:F2} → ยังไม่เสียหาย");
-                continue;
-            }
+            if (meters < data.minFallHeightMeter) continue;
 
-            // แปลงความสูง h → ความเร็วกระแทก v ≈ sqrt(2 g h)
-            float g = 9.81f;
-            float impactV = Mathf.Sqrt(2f * g * fallHeight);
+            int perMeter = Mathf.Max(0, data.damagePerMeter);
+            int raw = perMeter * meters;
 
-            Debug.Log($"[BoxInventory] Slot {i} {data.itemName}: impactV≈{impactV:F2}, safeV={data.safeImpactVelocity:F2}");
+            int divisor = Mathf.Max(1, inventoryDamageDivisor);
+            int dmg = raw / divisor;
+            if (dmg <= 0) dmg = 1;
 
-            if (impactV <= data.safeImpactVelocity)
-            {
-                Debug.Log($"[BoxInventory] Slot {i} {data.itemName}: v ไม่เกิน safeImpactVelocity → ไม่โดนดาเมจ");
-                continue;
-            }
+            float oldQ = s.itemQuality;
+            s.itemQuality = Mathf.Clamp(oldQ - dmg, 0f, 100f);
 
-            float over = impactV - data.safeImpactVelocity;
-            float damage = over * data.damagePerVelocity * Mathf.Max(0f, carriedDamageMultiplier);
-
-            if (damage <= 0f)
-            {
-                Debug.Log($"[BoxInventory] Slot {i} {data.itemName}: คำนวนดาเมจได้น้อยกว่า 0 → ข้าม");
-                continue;
-            }
-
-            float oldQ = slot.itemQuality;
-            slot.itemQuality -= damage;
-            slot.itemQuality = Mathf.Clamp(slot.itemQuality, 0f, 100f);
-
-            Debug.Log($"[BoxInventory] Slot {i} {data.itemName}: oldQ={oldQ:F1}, damage={damage:F1}, newQ={slot.itemQuality:F1}");
+            Debug.Log($"[BoxInventory] slot {i} {data.itemName}: fall={fallHeight:F2}m ({meters}m), dmg={dmg}, Q {oldQ:F0}→{s.itemQuality:F0}");
         }
     }
+
 }

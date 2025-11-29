@@ -13,9 +13,9 @@ public class PlayerFallDamageCarrier : MonoBehaviour
     [Tooltip("Layer ที่ถือว่าเป็นพื้น (ถ้าไม่มั่นใจลองตั้งเป็น Everything/~0 ชั่วคราว)")]
     public LayerMask groundLayer = ~0;
 
-    [Header("Minimum fall height for any damage (เมตร)")]
-    [Tooltip("ตกจากที่สูงน้อยกว่าค่านี้จะไม่เรียกใช้ดาเมจเลย")]
-    public float minFallHeightForAnyDamage = 1.0f;
+    [Header("Min Fall Height (meters, int)")]
+    [Tooltip("ตกจากที่สูง (เมตร) น้อยกว่าค่านี้จะไม่คิดดาเมจ")]
+    public int minFallHeightMeters = 1;
 
     float fallStartY;
     bool wasGrounded = true;
@@ -34,15 +34,18 @@ public class PlayerFallDamageCarrier : MonoBehaviour
         // ลงพื้น: จาก not grounded → grounded
         if (grounded && !wasGrounded)
         {
-            float drop = fallStartY - transform.position.y;
-            Debug.Log($"[PlayerFall] Landed at Y={transform.position.y:F2}, drop={drop:F2} m");
+            float rawDrop = fallStartY - transform.position.y;
+            int meters = Mathf.RoundToInt(rawDrop);
 
-            if (drop > minFallHeightForAnyDamage)
+            Debug.Log($"[PlayerFall] Landed at Y={transform.position.y:F2}, rawDrop={rawDrop:F2} m (~{meters} m)");
+
+            if (meters >= minFallHeightMeters)
             {
                 if (BoxInventory.Instance != null)
                 {
-                    Debug.Log($"[PlayerFall] Apply fall damage to inventory with drop={drop:F2} m");
-                    BoxInventory.Instance.ApplyFallDamageToAll(drop);
+                    Debug.Log($"[PlayerFall] Apply fall damage to inventory with drop={meters} m");
+                    // ส่งเป็นเมตร (int) เข้าไป → BoxInventory จะใช้สูตร damagePerMeter * meters / divisor
+                    BoxInventory.Instance.ApplyFallDamageToAll(meters);
                 }
                 else
                 {
@@ -68,7 +71,6 @@ public class PlayerFallDamageCarrier : MonoBehaviour
         );
 
         Debug.DrawRay(origin, Vector3.down * groundCheckDistance, hit ? Color.green : Color.red);
-
         return hit;
     }
 }

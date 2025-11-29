@@ -49,10 +49,13 @@ public class BoxCore : MonoBehaviour
 
     [Header("Box Type")]
     public BoxKind boxType = BoxKind.Small;
+    [Header("FALL DAMAGE (BOX)")]
+    [Tooltip("ตัวหารดาเมจเวลาตกทั้งกล่อง (2=ครึ่ง)")]
+    public int boxDamageDivisor = 2;
 
-    [Header("Damage Protection")]
-    [Tooltip("1 = แรงเต็ม, 0.3 = กล่องช่วยรับแรงไป 70% ของของข้างใน")]
-    public float innerItemDamageMultiplier = 0.3f;
+    [Header("COLD BOX")]
+    public bool isColdBox = false;   // กล่องเย็นไหม
+
 
     [SerializeField] private DeliveryItemData currentItemData;
     [SerializeField] private DeliveryItemInstance currentItemInstance; 
@@ -105,13 +108,16 @@ public class BoxCore : MonoBehaviour
     void OnCollisionEnter(Collision collision)
     {
         if (!currentItemInstance) return;
+        if (step < BoxStep.Closed) return; // คิดเฉพาะปิดกล่องแล้ว
 
-        // ตัวอย่าง: คิดดาเมจเฉพาะกล่องที่ปิดฝาแล้ว
-        if (step < BoxStep.Closed) return;
+        float v = collision.relativeVelocity.magnitude;
+        float g = 9.81f;
+        float approxHeight = (v * v) / (2f * g);
 
-        float impact = collision.relativeVelocity.magnitude;
-        currentItemInstance.ApplyImpactFromContainer(impact, innerItemDamageMultiplier);
+        // กล่องช่วยลดดาเมจ → divisor เช่น 2 = ครึ่งหนึ่ง
+        currentItemInstance.ApplyFallHeight(approxHeight, Mathf.Max(1, boxDamageDivisor));
     }
+
 
 
 

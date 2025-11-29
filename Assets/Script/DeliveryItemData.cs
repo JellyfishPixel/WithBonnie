@@ -52,25 +52,24 @@ public class DeliveryItemData : ScriptableObject
 
     // ------------------ CONFIG ดาเมจ / ชำรุด / พัง ------------------
 
-    [Header("Threshold คุณภาพสำหรับสถานะต่าง ๆ")]
-    [Tooltip("ถ้าคุณภาพต่ำกว่าค่านี้ ถือว่าเป็นของ \"เสียหาย\" แต่ยังไม่พัง (isDamaged = true)")]
-    [Range(0, 100)]
-    public float damagedThreshold = 80f;
+    [Header("FALL DAMAGE (simple)")]
+    [Tooltip("เริ่มเสียหายเมื่อความสูง >= ค่านี้ (เมตร)")]
+    public int minFallHeightMeter = 1;
 
-    [Tooltip("ถ้าคุณภาพต่ำกว่าค่านี้ ถือว่า \"แตก/พัง\" ใช้งานไม่ได้ (isBroken = true)")]
-    [Range(0, 100)]
-    public float brokenThreshold = 20f;
+    [Tooltip("ดาเมจต่อ 1 เมตร (เช่น 5 = 5 ดาเมจ/เมตร)")]
+    public int damagePerMeter = 5;
 
-    [Header("ค่าดาเมจจากการชน/ตกแรง (ใช้กับความเร็ว)")]
-    [Tooltip("ความเร็วชน (m/s) ที่เริ่มจะโดนดาเมจ เช่น 3 = ชนเบา ๆ ไม่เป็นไร จนเกิน 3 ค่อยเริ่มเสียหาย")]
-    public float safeImpactVelocity = 3f;
+    [Header("COLD STORAGE")]
+    [Tooltip("ของต้องใส่กล่องเย็นหรือไม่")]
+    public bool requiresCold = false;
 
-    [Tooltip("เมื่อชนเกิน safeImpactVelocity ไป 1 หน่วย จะโดนดาเมจเท่าไหร่")]
-    public float damagePerVelocity = 5f;
+    [Header("QUALITY THRESHOLDS")]
+    [Tooltip("ต่ำกว่าค่านี้ถือว่า 'เสียหาย' ")]
+    [Range(0, 100)] public float damagedThreshold = 70f;
 
-    [Header("ค่าดาเมจจากความสูง (ใช้กับการตก)")]
-    [Tooltip("ตกจากความสูง (เมตร) ตั้งแต่ค่านี้ขึ้นไป ถึงจะเริ่มคำนวณดาเมจ (ใช้เวลาอยู่ใน inventory หรือโดนตกทั้งกล่อง)")]
-    public float minFallHeightForDamage = 2.0f;
+    [Tooltip("ต่ำกว่าค่านี้ถือว่า 'พัง / ใช้ไม่ได้' ")]
+    [Range(0, 100)] public float brokenThreshold = 20f;
+
 
     [Header("การเสียหายจากน้ำ / สภาพแวดล้อม")]
     [Tooltip("ของชิ้นนี้พังทันทีเมื่อโดนน้ำหรือไม่ (เช่น เอกสาร, อิเล็กทรอนิกส์ที่ไม่กันน้ำ)")]

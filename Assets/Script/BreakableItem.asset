@@ -19,10 +19,10 @@ MonoBehaviour:
   baseQuality: 100
   baseReward: 100
   destinationId: 
+  minFallHeightMeter: 1
+  damagePerMeter: 5
+  requiresCold: 0
   damagedThreshold: 80
   brokenThreshold: 20
-  safeImpactVelocity: 1
-  damagePerVelocity: 1
-  minFallHeightForDamage: 1
   breaksOnWater: 1
   allowedBoxTypes: 010000000200000000000000

@@ -172,9 +172,6 @@ public class GameManager : MonoBehaviour
         Debug.Log($"[GameManager] Register box: {record.data.itemName} day={currentDay}");
     }
 
-    /// <summary>
-    /// เรียกตอนส่งถึงปลายทาง
-    /// </summary>
     public void CompleteDelivery(BoxCore box)
     {
         DeliveryRecord rec = null;
@@ -188,12 +185,25 @@ public class GameManager : MonoBehaviour
         }
         if (rec == null) return;
 
-        // คำนวณเงินจากตัว item
-        int reward = rec.itemInstance.CalculateReward(rec.dayCreated, currentDay);
+        bool usedColdBox = false;
+        if (rec.box != null)
+        {
+            // ถ้าใช้ BoxKind.ColdBox ถือว่าเป็นกล่องเย็น
+            usedColdBox = (rec.box.boxType == BoxKind.ColdBox);
+        }
+
+        int baseLimit = rec.data.deliveryLimitDays;
+        int effectiveLimit = rec.itemInstance.CalculateEffectiveDeadlineDays(baseLimit, usedColdBox);
+
+        int dayCreated = rec.dayCreated;
+        int dayDelivered = GameManager.Instance.currentDay;
+
+        // แทนที่จะใช้ data.deliveryLimitDays ตรง ๆ
+        // คุณอาจจะเขียน CalculateReward ใหม่ให้รับ effectiveLimit เข้าไป
+        int reward = rec.itemInstance.CalculateReward(dayCreated, dayDelivered /*, effectiveLimit*/);
+
         AddMoney(reward);
-
-        Debug.Log($"[GameManager] Delivery complete {rec.data.itemName}, reward={reward}");
-
         activeBoxes.Remove(rec);
     }
+
 }
