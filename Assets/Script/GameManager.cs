@@ -93,7 +93,9 @@ public class GameManager : MonoBehaviour
             if (currentHour >= 24)
             {
                 currentHour = 0;
+                BoxInventory.Instance?.AdvanceOneDay();
                 currentDay++;
+
 
                 Debug.Log($"[GameManager] New Day: {currentDay}");
                 SyncDayToEconomy();    // ✅ ให้ EconomyManager รู้ว่าวันที่เปลี่ยน

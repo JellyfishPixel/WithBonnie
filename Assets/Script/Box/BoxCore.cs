@@ -6,8 +6,8 @@ public enum BoxStep
     ItemInside,
     BubbleDone,
     Closed,
-    Taped,    
-    Labeled     
+    Taped,
+    Labeled
 }
 
 [RequireComponent(typeof(Collider))]
@@ -15,7 +15,7 @@ public enum BoxStep
 public class BoxCore : MonoBehaviour
 {
     [Header("Item Detection")]
-    public string pickableTag = "pickable"; 
+    public string pickableTag = "pickable";
     public Collider itemArea;
 
     [Header("Pickup Settings")]
@@ -35,6 +35,7 @@ public class BoxCore : MonoBehaviour
     [SerializeField] private bool lidsClosed = false;
     [SerializeField] private bool tapeDone = false;
     [SerializeField] private bool labelDone = false;
+    [SerializeField] private bool bubbleStarted = false;
 
     public BoxStep Step => step;
     public bool HasItem => hasItem;
@@ -43,12 +44,13 @@ public class BoxCore : MonoBehaviour
     public bool TapeDone => tapeDone;
     public bool LabelDone => labelDone;
 
-    public bool IsFinsihedClose => lidsClosed;  
+    public bool IsFinsihedClose => lidsClosed;
 
     Rigidbody rb;
 
     [Header("Box Type")]
     public BoxKind boxType = BoxKind.Small;
+
     [Header("FALL DAMAGE (BOX)")]
     [Tooltip("ตัวหารดาเมจเวลาตกทั้งกล่อง (2=ครึ่ง)")]
     public int boxDamageDivisor = 2;
@@ -56,9 +58,8 @@ public class BoxCore : MonoBehaviour
     [Header("COLD BOX")]
     public bool isColdBox = false;   // กล่องเย็นไหม
 
-
     [SerializeField] private DeliveryItemData currentItemData;
-    [SerializeField] private DeliveryItemInstance currentItemInstance; 
+    [SerializeField] private DeliveryItemInstance currentItemInstance;
 
     public DeliveryItemData CurrentItemData => currentItemData;
     public DeliveryItemInstance CurrentItemInstance => currentItemInstance;
@@ -80,6 +81,7 @@ public class BoxCore : MonoBehaviour
         rb.useGravity = false;
 
         step = BoxStep.Empty;
+        UpdateBoxTag();
     }
 
     void OnDestroy()
@@ -105,6 +107,7 @@ public class BoxCore : MonoBehaviour
         }
     }
 
+    // ========= ดาเมจตอนกล่องตก =========
     void OnCollisionEnter(Collision collision)
     {
         if (!currentItemInstance) return;
@@ -118,9 +121,25 @@ public class BoxCore : MonoBehaviour
         currentItemInstance.ApplyFallHeight(approxHeight, Mathf.Max(1, boxDamageDivisor));
     }
 
+    // ========= จัดการ TAG ตามสถานะ =========
+    void UpdateBoxTag()
+    {
 
+        if (labelDone || step == BoxStep.Labeled)
+        {
+            if (!string.IsNullOrEmpty(boxPickupTag))
+                gameObject.tag = boxPickupTag;
+            return;
+        }
+        if (bubbleStarted || bubbleFull || step >= BoxStep.BubbleDone)
+        {
+            gameObject.tag = "Box";
+            return;
+        }
 
+    }
 
+    // ========= ตรวจของเข้า/ออกกล่อง =========
     void OnTriggerEnter(Collider other)
     {
         if (!itemArea) return;
@@ -133,7 +152,6 @@ public class BoxCore : MonoBehaviour
         var itemInst = other.GetComponentInParent<DeliveryItemInstance>();
         if (itemInst && itemInst.data)
         {
-           
             if (!CanAccept(itemInst.data))
             {
                 Debug.LogWarning($"[BoxCore] Item {itemInst.data.itemName} ใช้กับกล่อง {boxType} ไม่ได้");
@@ -142,14 +160,16 @@ public class BoxCore : MonoBehaviour
 
             currentItemInstance = itemInst;
             currentItemData = itemInst.data;
-            gameObject.tag = "Box";
+            // ❌ ไม่ต้องเปลี่ยน tag เป็น "Box" ตรงนี้แล้ว
         }
+
+        UpdateBoxTag();
     }
 
     public bool CanAccept(DeliveryItemData data)
     {
         if (data == null || data.allowedBoxTypes == null || data.allowedBoxTypes.Length == 0)
-            return true; 
+            return true;
 
         foreach (var allowed in data.allowedBoxTypes)
             if (allowed == boxType) return true;
@@ -163,8 +183,17 @@ public class BoxCore : MonoBehaviour
         if (other.CompareTag(pickableTag))
         {
             hasItem = IsPickableStillInside();
-            if (!hasItem && step >= BoxStep.ItemInside)
+
+            // ถ้าไม่มีของแล้ว และยัง "ไม่เคย" ใส่บับเบิล → reset เป็น Empty
+            // ถ้าเคยใส่บับเบิลแล้ว (step >= BubbleDone) → ห้ามย้อนกลับไป Empty
+            if (!hasItem && step == BoxStep.ItemInside)
+            {
                 step = BoxStep.Empty;
+                currentItemInstance = null;
+                currentItemData = null;
+            }
+
+            UpdateBoxTag();
         }
     }
 
@@ -180,6 +209,7 @@ public class BoxCore : MonoBehaviour
         return false;
     }
 
+    // ========= แพ็คของเข้ากล่อง (หลังแปะลาเบล) =========
     void PackItemsIntoBox()
     {
         if (!itemArea) return;
@@ -192,16 +222,13 @@ public class BoxCore : MonoBehaviour
             if (!col.CompareTag(pickableTag))
                 continue;
 
-  
             col.transform.SetParent(this.transform, true);
-
 
             var itemRb = col.attachedRigidbody;
             if (itemRb)
             {
                 itemRb.isKinematic = true;
                 itemRb.useGravity = false;
-
             }
 
             foreach (var r in col.GetComponentsInChildren<Renderer>())
@@ -209,7 +236,6 @@ public class BoxCore : MonoBehaviour
 
             foreach (var c in col.GetComponentsInChildren<Collider>())
             {
-
                 if (c != itemArea)
                     c.enabled = false;
             }
@@ -231,6 +257,11 @@ public class BoxCore : MonoBehaviour
             return false;
         }
         return true;
+    }
+    public void NotifyBubbleStarted()
+    {
+        bubbleStarted = true;
+        UpdateBoxTag(); 
     }
 
     public void NotifyBubbleFull()
@@ -260,7 +291,6 @@ public class BoxCore : MonoBehaviour
         return true;
     }
 
-
     public void NotifyTapeDone()
     {
         tapeDone = true;
@@ -268,8 +298,9 @@ public class BoxCore : MonoBehaviour
             step = BoxStep.Taped;
 
         Debug.Log("[BoxCore] Tape done.");
+        // ยังไม่ต้องเปลี่ยน tag เพราะใช้กฎเดียวกับ BubbleDone (ห้ามยก)
+        UpdateBoxTag();
     }
-
 
     public void NotifyLabelPasted()
     {
@@ -279,23 +310,15 @@ public class BoxCore : MonoBehaviour
 
         Debug.Log("[BoxCore] Label pasted → box is now pickable.");
         PackItemsIntoBox();
-        MakeBoxPickable();
+        MakeBoxPickable();   // จะตั้ง tag = boxPickupTag
     }
 
     void MakeBoxPickable()
     {
-       
         rb.isKinematic = false;
         rb.useGravity = true;
 
-        
         if (!string.IsNullOrEmpty(boxPickupTag))
             gameObject.tag = boxPickupTag;
-
-        // ถ้าคุณมีระบบ BoxSpawner ที่ต้อง spawn กล่องใหม่ สามารถไปเคลียร์ flag ตรงนั้นเพิ่มได้
-        // เช่น:
-        // var spawner = FindAnyObjectByType<BoxSpawner>();
-        // if (spawner) spawner.hasSpawnedBox = false;
     }
-
 }

@@ -60,7 +60,6 @@ public class DeliveryItemInstance : MonoBehaviour
         ApplyFallHeight(approxHeight, 1);
     }
 
-
     public void ApplyFallHeight(float fallHeight, int damageDivisor)
     {
         if (data == null || isBroken) return;
@@ -81,19 +80,6 @@ public class DeliveryItemInstance : MonoBehaviour
         Debug.Log($"[ItemInstance] {data.itemName} fallHeight≈{fallHeight:F2}m ({meters}m), perMeter={perMeter}, divisor={divisor}, dmg={dmg}, Q={currentQuality:F0}");
     }
 
-    public int CalculateEffectiveDeadlineDays(int baseDays, bool inColdBox)
-    {
-        if (data == null) return baseDays;
-
-        if (!data.requiresCold) return baseDays;
-
-        // ต้องการกล่องเย็น
-        if (inColdBox) return baseDays;
-
-        // ใส่กล่องธรรมดา → เหลือ 1/3 (อย่างน้อย 1 วัน)
-        int reduced = baseDays / 3;
-        return Mathf.Max(1, reduced);
-    }
 
     public void ApplyDamage(float amount)
     {
@@ -113,8 +99,19 @@ public class DeliveryItemInstance : MonoBehaviour
             isBroken = currentQuality <= 0f;
         }
     }
+    public int CalculateEffectiveDeadlineDays(int baseDays, bool inColdBox)
+    {
+        if (data == null) return baseDays;
 
+        if (!data.requiresCold) return baseDays;
 
+        // ต้องการกล่องเย็น
+        if (inColdBox) return baseDays;
+
+        // ใส่กล่องธรรมดา → เหลือ 1/3 (อย่างน้อย 1 วัน)
+        int reduced = baseDays / 3;
+        return Mathf.Max(1, reduced);
+    }
 
     public int CalculateReward(int dayCreated, int dayDelivered)
     {

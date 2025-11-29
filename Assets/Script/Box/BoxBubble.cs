@@ -116,13 +116,18 @@ public class BoxBubble : MonoBehaviour, IInteractable
         scaleCo = StartCoroutine(ScaleTo(target, scaleDuration));
         Debug.Log("ScaleTo coroutine started");
 
-        // 11. ถ้าครบแล้ว แจ้ง BoxCore
+        if (bubbleCount == 1)
+        {
+            Debug.Log("Bubble START -> Lock Box");
+            box.NotifyBubbleStarted();
+        }
+
+        // ✅ ครบจำนวนตามเดิม (เอาไว้ใช้เช็คว่า bubble เต็ม / UI / เอฟเฟกต์)
         if (bubbleCount >= maxBubble)
         {
             Debug.Log("Bubble FULL -> Notify BoxCore");
             box.NotifyBubbleFull();
         }
-
         Debug.Log("========== AddBubble FINISHED ==========");
     }
 

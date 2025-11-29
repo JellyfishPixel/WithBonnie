@@ -15,14 +15,14 @@ MonoBehaviour:
   itemName: 
   icon: {fileID: 0}
   category: 1
-  deliveryLimitDays: 1
+  deliveryLimitDays: 6
   baseQuality: 100
   baseReward: 100
   destinationId: 
+  minFallHeightMeter: 1
+  damagePerMeter: 5
+  requiresCold: 1
   damagedThreshold: 80
   brokenThreshold: 20
-  safeImpactVelocity: 3
-  damagePerVelocity: 5
-  minFallHeightForDamage: 2
   breaksOnWater: 1
-  allowedBoxTypes: 03000000
+  allowedBoxTypes: 0300000000000000

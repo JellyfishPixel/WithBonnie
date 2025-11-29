@@ -1438,8 +1438,10 @@ MonoBehaviour:
   lidsClosed: 0
   tapeDone: 0
   labelDone: 0
+  bubbleStarted: 0
   boxType: 3
-  innerItemDamageMultiplier: 0.3
+  boxDamageDivisor: 2
+  isColdBox: 1
   currentItemData: {fileID: 0}
   currentItemInstance: {fileID: 0}
 --- !u!4 &3093471409491763370 stripped

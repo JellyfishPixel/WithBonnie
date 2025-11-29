@@ -15,15 +15,24 @@ public class BoxInventory : MonoBehaviour
     [Tooltip("ตัวหารดาเมจตอนอยู่ใน inventory (2 = ครึ่งหนึ่ง, 3 = เหลือ 1/3)")]
     public int inventoryDamageDivisor = 2;
 
-
     [Serializable]
     public class BoxSlot
     {
-        public bool hasBox;
-        public BoxKind boxType;
-        public DeliveryItemData itemData;
+        public bool hasBox;                 // มีของอยู่ใน slot ไหม
+        public BoxKind boxType;             // ประเภทกล่อง
+        public DeliveryItemData itemData;   // ข้อมูล item
+
+        [Header("QUALITY")]
         [Range(0, 100)]
-        public float itemQuality = 100f;
+        public float itemQuality = 100f;    // คุณภาพล่าสุดของของ
+
+        [Header("DELIVERY TIME")]
+        [Tooltip("จำนวนวันที่เหลือสำหรับการส่ง (หลังคำนวณจากกล่องเย็นแล้ว)")]
+        public int remainingDays = 0;
+
+        [Header("STATE")]
+        public bool isDamaged;              // เสียหายแล้วหรือยัง
+        public bool isBroken;               // พังแล้วหรือยัง (ส่งไม่ได้)
     }
 
 
@@ -62,7 +71,29 @@ public class BoxInventory : MonoBehaviour
         return -1;
     }
 
-    // ---------------- เก็บกล่องเข้า inventory ----------------
+    void UpdateItemState(BoxSlot slot)
+    {
+        if (slot.itemData == null) return;
+
+        slot.isDamaged = slot.itemQuality <= slot.itemData.damagedThreshold;
+        slot.isBroken = slot.itemQuality <= slot.itemData.brokenThreshold;
+    }
+    public void AdvanceOneDay()
+    {
+        for (int i = 0; i < slots.Length; i++)
+        {
+            var s = slots[i];
+            if (!s.hasBox) continue;
+
+            s.remainingDays--;
+
+            if (s.remainingDays < 0)
+                s.remainingDays = 0;
+
+            Debug.Log($"[BoxInventory] Slot {i} remainingDays = {s.remainingDays}");
+        }
+    }
+
     public bool StoreBox(BoxCore box)
     {
         if (!box || !box.CurrentItemData || !box.CurrentItemInstance)
@@ -83,6 +114,14 @@ public class BoxInventory : MonoBehaviour
         slot.boxType = box.boxType;
         slot.itemData = box.CurrentItemData;
         slot.itemQuality = box.CurrentItemInstance.currentQuality;
+        slot.remainingDays =
+    box.CurrentItemInstance.CalculateEffectiveDeadlineDays(
+        box.CurrentItemData.deliveryLimitDays,
+        box.boxType == BoxKind.ColdBox   // ถ้าเป็นกล่องเย็น
+    );
+
+        // เซ็ตสถานะเริ่มต้น
+        UpdateItemState(slot);
 
         Debug.Log($"[BoxInventory] StoreBox: slot={free}, item={slot.itemData.itemName}, quality={slot.itemQuality:F1}");
 
@@ -136,11 +175,6 @@ public class BoxInventory : MonoBehaviour
         return core;
     }
 
-    // ---------------- ดาเมจตอนผู้เล่นตกจากที่สูง ----------------
-    /// <summary>
-    /// ให้ผู้เล่นเรียกเวลาตกจากที่สูง
-    /// fallHeight = ส่วนต่างความสูงที่ตก (เมตร)
-    /// </summary>
     public void ApplyFallDamageToAll(float fallHeight)
     {
         int meters = Mathf.RoundToInt(fallHeight);
@@ -164,7 +198,7 @@ public class BoxInventory : MonoBehaviour
 
             float oldQ = s.itemQuality;
             s.itemQuality = Mathf.Clamp(oldQ - dmg, 0f, 100f);
-
+            UpdateItemState(s);
             Debug.Log($"[BoxInventory] slot {i} {data.itemName}: fall={fallHeight:F2}m ({meters}m), dmg={dmg}, Q {oldQ:F0}→{s.itemQuality:F0}");
         }
     }
