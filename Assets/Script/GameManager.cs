@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
+using TMPro;   // ✅ เพิ่มสำหรับ TextMeshPro
 
 public class GameManager : MonoBehaviour
 {
@@ -15,8 +16,13 @@ public class GameManager : MonoBehaviour
 
     float timeAcc;   // ตัวนับเวลาจริง
 
-    [Header("Money")]
+    [Header("Money (Preview from EconomyManager)")]
+    [Tooltip("ใช้ดูรวม ๆ ใน Inspector เฉย ๆ ค่าเงินจริงมาจาก EconomyManager")]
     public int totalMoney = 0;
+
+    [Header("Clock UI")]
+    [Tooltip("Text ไว้แสดงเวลา เช่น DAY 1  09:23")]
+    public TMP_Text clockText;
 
     [Header("Delivery Storage (max 3 per round)")]
     public int maxActiveBoxes = 3;
@@ -45,49 +51,104 @@ public class GameManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
+    void Start()
+    {
+        // อัปเดต UI เวลา + sync วันไป EconomyManager (ถ้ามี)
+        UpdateClockUI();
+        SyncDayToEconomy();
+        SyncMoneyFromEconomy();
+    }
+
     void Update()
     {
         UpdateGameTime();
     }
 
+    // ================== TIME SYSTEM ==================
+
     void UpdateGameTime()
     {
         timeAcc += Time.deltaTime;
 
-        float secPerHour = realSecondsPerGameHour;
-        while (timeAcc >= secPerHour)
+        // 1 ชั่วโมงในเกม ใช้ realSecondsPerGameHour วินาทีจริง
+        // => 1 นาทีในเกม = realSecondsPerGameHour / 60
+        float secPerGameMinute = realSecondsPerGameHour / 60f;
+
+        while (timeAcc >= secPerGameMinute)
         {
-            timeAcc -= secPerHour;
-            AdvanceOneHour();
+            timeAcc -= secPerGameMinute;
+            AdvanceOneMinute();
         }
     }
 
-    void AdvanceOneHour()
+    void AdvanceOneMinute()
     {
-        currentHour++;
-        if (currentHour >= 24)
+        currentMinute++;
+
+        if (currentMinute >= 60)
         {
-            currentHour = 0;
-            currentDay++;
+            currentMinute = 0;
+            currentHour++;
+
+            if (currentHour >= 24)
+            {
+                currentHour = 0;
+                currentDay++;
+
+                Debug.Log($"[GameManager] New Day: {currentDay}");
+                SyncDayToEconomy();    // ✅ ให้ EconomyManager รู้ว่าวันที่เปลี่ยน
+            }
         }
-        currentMinute = 0;
+
+        UpdateClockUI();
     }
 
+    void UpdateClockUI()
+    {
+        if (clockText == null) return;
 
-    // ========= API เกี่ยวกับเงิน =========
+        // รูปแบบ: DAY 1  09:23
+        clockText.text = $"DAY {currentDay}  {currentHour:00}:{currentMinute:00}";
+    }
+
+    void SyncDayToEconomy()
+    {
+        if (EconomyManager.Instance != null)
+        {
+            EconomyManager.Instance.currentDay = currentDay;
+        }
+    }
+
+    void SyncMoneyFromEconomy()
+    {
+        if (EconomyManager.Instance != null)
+        {
+            totalMoney = EconomyManager.Instance.TotalFunds;
+        }
+    }
+
+    // ================== MONEY ==================
 
     public void AddMoney(int amount)
     {
-        totalMoney += amount;
-        if (totalMoney < 0) totalMoney = 0;
-        Debug.Log($"[GameManager] Money: {totalMoney}");
+        // เงินจริงไปอยู่ใน EconomyManager
+        if (EconomyManager.Instance != null)
+        {
+            EconomyManager.Instance.AddCashToday(amount);
+            totalMoney = EconomyManager.Instance.TotalFunds;   // sync ไว้ดูเฉย ๆ
+        }
+        else
+        {
+            // fallback เผื่อยังไม่มี EconomyManager ในซีน
+            totalMoney += amount;
+            if (totalMoney < 0) totalMoney = 0;
+        }
+
+        Debug.Log($"[GameManager] Money (preview total funds): {totalMoney}");
     }
 
-    // ========= API เกี่ยวกับกล่องในรอบนี้ =========
+    // ================== DELIVERY ==================
 
-    /// <summary>
-    /// เรียกจาก BoxCore เมื่อกล่องพร้อมส่ง (ปิดเทป+ลาเบลแล้ว)
-    /// </summary>
     public void RegisterNewDelivery(BoxCore box, DeliveryItemInstance item)
     {
         if (!box || !item || !item.data) return;

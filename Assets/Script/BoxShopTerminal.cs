@@ -1,0 +1,23 @@
+﻿using UnityEngine;
+
+public class BoxShopTerminal : MonoBehaviour, IInteractable
+{
+    [Header("Reference")]
+    public BoxShopUI shopUI;
+
+    public void Interact(PlayerInteractionSystem player)
+    {
+        if (!shopUI)
+        {
+            Debug.LogWarning("[BoxShopTerminal] shopUI not assigned");
+            return;
+        }
+
+        shopUI.Open(this, player);
+    }
+
+    public void NotifyShopClosed()
+    {
+        // เผื่ออนาคตอยากเล่นอนิเมชันตอนปิดร้าน ฯลฯ
+    }
+}

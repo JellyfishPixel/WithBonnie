@@ -23,7 +23,7 @@ public class PlayerInteractionSystem : MonoBehaviour
     [Header("Box Inventory")]
     public KeyCode storeBoxKey = KeyCode.E;   // กด E ตอนถือกล่อง = เก็บเข้าตัว
 
-
+    bool isMovementLocked = false;
     // ---------- held state ----------
     public GameObject HeldObject { get; private set; }
     Rigidbody heldRb;
@@ -65,20 +65,20 @@ public class PlayerInteractionSystem : MonoBehaviour
 
     void Update()
     {
-        // ❶ เก็บกล่องเข้า inventory ด้วย E
-        if (Input.GetKeyDown(storeBoxKey))
+        if (isMovementLocked) return;
+
+            if (Input.GetKeyDown(storeBoxKey))
         {
             if (HeldObject != null)
                 StoreHeldBoxToInventory();
             else
-                TryInteract();    // ถ้าไม่ได้ถืออะไร ใช้ E เป็น interact ปกติได้
+                TryInteract(); 
         }
 
-        // ❷ Interact ด้วยคลิกซ้าย (ถ้ายังใช้)
+
         if (Input.GetKeyDown(interactKey))
             TryInteract();
 
-        // ❸ Pickup / Drop ด้วย Mouse0 (ถ้ายังใช้)
         if (Input.GetKeyDown(pickupKey))
         {
             if (HeldObject == null) TryPickup();
@@ -298,4 +298,26 @@ public class PlayerInteractionSystem : MonoBehaviour
     }
 
     #endregion
+
+    public void LockMovement()
+    {
+        isMovementLocked = true;
+
+
+        var controller = GetComponent<CharacterController>();
+        if (controller) controller.enabled = false;
+    }
+
+    public void UnlockMovement()
+    {
+        isMovementLocked = false;
+
+        var controller = GetComponent<CharacterController>();
+        if (controller) controller.enabled = true;
+    }
+
+    public bool IsMovementLocked()
+    {
+        return isMovementLocked;
+    }
 }

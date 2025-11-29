@@ -64,9 +64,12 @@ namespace StarterAssets
 		private float _jumpTimeoutDelta;
 		private float _fallTimeoutDelta;
 
-	
+        private bool _movementLocked = false;
+        public bool IsMovementLocked => _movementLocked;
+
+
 #if ENABLE_INPUT_SYSTEM
-		private PlayerInput _playerInput;
+        private PlayerInput _playerInput;
 #endif
 		private CharacterController _controller;
 		private StarterAssetsInputs _input;
@@ -110,19 +113,31 @@ namespace StarterAssets
 			_fallTimeoutDelta = FallTimeout;
 		}
 
-		private void Update()
-		{
-			JumpAndGravity();
-			GroundedCheck();
-			Move();
-		}
+        private void Update()
+        {
+            if (_movementLocked)
+            {
+                // รีเซ็ตความเร็วไว้ กันลื่น/ไหล
+                _speed = 0f;
+                _verticalVelocity = 0f;
+                return;
+            }
 
-		private void LateUpdate()
-		{
-			CameraRotation();
-		}
+            JumpAndGravity();
+            GroundedCheck();
+            Move();
+        }
 
-		private void GroundedCheck()
+
+        private void LateUpdate()
+        {
+            if (_movementLocked) return;
+
+            CameraRotation();
+        }
+
+
+        private void GroundedCheck()
 		{
 			// set sphere position, with offset
 			Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z);
@@ -198,7 +213,32 @@ namespace StarterAssets
 			_controller.Move(inputDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
 		}
 
-		private void JumpAndGravity()
+        public void LockMovement()
+        {
+            _movementLocked = true;
+
+            // เคลียร์ input ตอนนี้ทิ้ง
+            if (_input != null)
+            {
+                _input.move = Vector2.zero;
+                _input.look = Vector2.zero;
+                _input.jump = false;
+                _input.sprint = false;
+            }
+
+            // หยุดความเร็วแนวดิ่ง กันกระตุก
+            _speed = 0f;
+            _verticalVelocity = 0f;
+
+            Debug.Log("[FPC] LockMovement");
+        }
+
+        public void UnlockMovement()
+        {
+            _movementLocked = false;
+            Debug.Log("[FPC] UnlockMovement");
+        }
+        private void JumpAndGravity()
 		{
 			if (Grounded)
 			{

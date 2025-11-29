@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Bin : MonoBehaviour
 {
-    public void ontriggerEnter(Collider item)
+    public void OnTriggerEnter(Collider item)
     {
         if (item.CompareTag("pickable"))
         {

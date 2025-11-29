@@ -43,13 +43,13 @@ public class DeliveryItemInstance : MonoBehaviour
     {
         if (data == null || isBroken) return;
 
-        // ถ้าโดนน้ำและไอเท็มนี้พังเมื่อโดนน้ำ
-        if (collision.collider.CompareTag("Water") && data.breaksOnWater)
-        {
-            ApplyDamage(999f); // ให้ดาเมจเยอะ ๆ เพื่อให้คุณภาพเหลือ 0
-            Debug.Log($"[ItemInstance] {data.itemName} พังเพราะโดนน้ำ");
-            return;
-        }
+        //// ถ้าโดนน้ำและไอเท็มนี้พังเมื่อโดนน้ำ
+        //if (collision.collider.CompareTag("Water") && data.breaksOnWater)
+        //{
+        //    ApplyDamage(999f); // ให้ดาเมจเยอะ ๆ เพื่อให้คุณภาพเหลือ 0
+        //    Debug.Log($"[ItemInstance] {data.itemName} พังเพราะโดนน้ำ");
+        //    return;
+        //}
 
         // ใช้ความเร็วการชนของ Rigidbody ในการคำนวนดาเมจ
         float impact = collision.relativeVelocity.magnitude;

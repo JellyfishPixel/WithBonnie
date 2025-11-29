@@ -23,6 +23,6 @@ MonoBehaviour:
   brokenThreshold: 20
   safeImpactVelocity: 1
   damagePerVelocity: 1
-  minFallHeightForDamage: 2
+  minFallHeightForDamage: 1
   breaksOnWater: 1
   allowedBoxTypes: 010000000200000000000000
