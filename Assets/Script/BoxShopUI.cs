@@ -11,11 +11,12 @@ public class BoxShopUI : MonoBehaviour
     public int priceS = 10;
     public int priceM = 15;
     public int priceL = 20;
-
+    public int priceC = 25;
     [Header("Qty Text")]
     public TMP_Text qtySText;
     public TMP_Text qtyMText;
     public TMP_Text qtyLText;
+    public TMP_Text qtyCText;
 
     [Header("Money Text")]
     public TMP_Text cashText;         // "CASH : 100$"
@@ -27,7 +28,7 @@ public class BoxShopUI : MonoBehaviour
     PlayerInteractionSystem currentPlayer;
     BoxShopTerminal currentTerminal;
 
-    int qtyS, qtyM, qtyL;
+    int qtyS, qtyM, qtyL, qtyC;
 
     FirstPersonController fpc;
 
@@ -90,7 +91,7 @@ public class BoxShopUI : MonoBehaviour
 
     void ResetSelections()
     {
-        qtyS = qtyM = qtyL = 0;
+        qtyS = qtyM = qtyL = qtyC = 0;
     }
 
     void RefreshUI()
@@ -98,7 +99,7 @@ public class BoxShopUI : MonoBehaviour
         if (qtySText) qtySText.text = qtyS.ToString();
         if (qtyMText) qtyMText.text = qtyM.ToString();
         if (qtyLText) qtyLText.text = qtyL.ToString();
-
+        if (qtyCText) qtyCText.text = qtyC.ToString();
         var eco = EconomyManager.Instance;
         if (eco && cashText)
         {
@@ -116,6 +117,8 @@ public class BoxShopUI : MonoBehaviour
     public void AddM(int delta) { qtyM = Mathf.Max(0, qtyM + delta); RefreshUI(); }
     public void AddL(int delta) { qtyL = Mathf.Max(0, qtyL + delta); RefreshUI(); }
 
+    public void AddC(int delta) { qtyC = Mathf.Max(0, qtyC + delta); RefreshUI(); }
+
     // hook กับปุ่มใน Inspector:
     //  ปุ่ม S "-" => OnClick -> BoxShopUI.AddS -1
     //  ปุ่ม S "+" => OnClick -> BoxShopUI.AddS  1  เป็นต้น
@@ -130,7 +133,8 @@ public class BoxShopUI : MonoBehaviour
         int totalCost =
             qtyS * priceS +
             qtyM * priceM +
-            qtyL * priceL;
+            qtyL * priceL +
+            qtyC* priceC ;
 
         if (totalCost <= 0)
         {
@@ -153,7 +157,7 @@ public class BoxShopUI : MonoBehaviour
         eco.AddBox(BoxSizeSimple.Small, qtyS);
         eco.AddBox(BoxSizeSimple.Medium, qtyM);
         eco.AddBox(BoxSizeSimple.Large, qtyL);
-
+        eco.AddBox(BoxSizeSimple.ColdBox, qtyC);
         ResetSelections();
         RefreshUI();
 

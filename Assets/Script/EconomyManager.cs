@@ -1,7 +1,7 @@
 ﻿using TMPro;
 using UnityEngine;
 
-public enum BoxSizeSimple { Small, Medium, Large }
+public enum BoxSizeSimple { Small, Medium, Large, ColdBox }
 
 public class EconomyManager : MonoBehaviour
 {
@@ -26,7 +26,7 @@ public class EconomyManager : MonoBehaviour
     public int boxStockS = 0;
     public int boxStockM = 0;
     public int boxStockL = 0;
-
+    public int boxStockCold = 0;
     // ========= PlayerPrefs Keys =========
     const string KEY_DAY = "Eco_Day";
     const string KEY_CASH = "Eco_CashToday";
@@ -34,6 +34,7 @@ public class EconomyManager : MonoBehaviour
     const string KEY_BOX_S = "Eco_BoxS";
     const string KEY_BOX_M = "Eco_BoxM";
     const string KEY_BOX_L = "Eco_BoxL";
+    const string KEY_BOX_Cold = "Eco_ColdBox";
 
     [SerializeField] bool loadFromSaveOnStart = false;   // เปิดใน Inspector ได้
 
@@ -149,6 +150,7 @@ public class EconomyManager : MonoBehaviour
             BoxSizeSimple.Small => boxStockS > 0,
             BoxSizeSimple.Medium => boxStockM > 0,
             BoxSizeSimple.Large => boxStockL > 0,
+            BoxSizeSimple.ColdBox => boxStockCold > 0,
             _ => false
         };
     }
@@ -162,6 +164,7 @@ public class EconomyManager : MonoBehaviour
             case BoxSizeSimple.Small: boxStockS--; break;
             case BoxSizeSimple.Medium: boxStockM--; break;
             case BoxSizeSimple.Large: boxStockL--; break;
+            case BoxSizeSimple.ColdBox: boxStockCold--; break;
         }
 
         SaveToPrefs();
@@ -177,6 +180,7 @@ public class EconomyManager : MonoBehaviour
             case BoxSizeSimple.Small: boxStockS += amount; break;
             case BoxSizeSimple.Medium: boxStockM += amount; break;
             case BoxSizeSimple.Large: boxStockL += amount; break;
+            case BoxSizeSimple.ColdBox: boxStockCold += amount; break;
         }
 
         SaveToPrefs();
@@ -193,6 +197,7 @@ public class EconomyManager : MonoBehaviour
         PlayerPrefs.SetInt(KEY_BOX_S, boxStockS);
         PlayerPrefs.SetInt(KEY_BOX_M, boxStockM);
         PlayerPrefs.SetInt(KEY_BOX_L, boxStockL);
+        PlayerPrefs.SetInt(KEY_BOX_Cold, boxStockCold);
         PlayerPrefs.Save();
     }
 
@@ -204,6 +209,7 @@ public class EconomyManager : MonoBehaviour
         boxStockS = PlayerPrefs.GetInt(KEY_BOX_S, 0);
         boxStockM = PlayerPrefs.GetInt(KEY_BOX_M, 0);
         boxStockL = PlayerPrefs.GetInt(KEY_BOX_L, 0);
+        boxStockCold = PlayerPrefs.GetInt(KEY_BOX_Cold, 0);
 
         Debug.Log($"[Eco] Load => Day={currentDay}, cashToday={cashToday}, bank={bankBalance}, S={boxStockS}, M={boxStockM}, L={boxStockL}");
         UpdateMoneyUI();

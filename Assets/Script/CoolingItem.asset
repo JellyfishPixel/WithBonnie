@@ -10,19 +10,19 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 564a82e0ceba4a845a2dfda6cd3e2e71, type: 3}
-  m_Name: SphereItem
+  m_Name: CoolingItem
   m_EditorClassIdentifier: Assembly-CSharp::DeliveryItemData
-  itemName: SphereItem
+  itemName: 
   icon: {fileID: 0}
-  category: 0
-  deliveryLimitDays: 3
+  category: 1
+  deliveryLimitDays: 1
   baseQuality: 100
   baseReward: 100
   destinationId: 
   damagedThreshold: 80
   brokenThreshold: 20
-  safeImpactVelocity: 1
-  damagePerVelocity: 1
-  minFallHeightForDamage: 1
+  safeImpactVelocity: 3
+  damagePerVelocity: 5
+  minFallHeightForDamage: 2
   breaksOnWater: 1
-  allowedBoxTypes: 010000000200000000000000
+  allowedBoxTypes: 03000000
