@@ -32,8 +32,12 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
         // ✅ ถ้าส่งสำเร็จ → บวกเงิน
         if (reward > 0)
         {
+  
             if (GameManager.Instance != null)
+            {
                 GameManager.Instance.AddMoney(reward);
+                AddSalesPopupUI.ShowNotice(reward);
+            }
             else
                 Debug.LogWarning("[DeliveryPoint] GameManager.Instance = null → เงินไม่ถูกบวก");
         }

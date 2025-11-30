@@ -18,7 +18,7 @@ MonoBehaviour:
   deliveryLimitDays: 6
   baseQuality: 100
   baseReward: 100
-  destinationId: 
+  destinationId: HomeCool
   minFallHeightMeter: 1
   damagePerMeter: 5
   requiresCold: 1
