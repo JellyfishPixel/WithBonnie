@@ -78,4 +78,8 @@ public class DeliveryItemData : ScriptableObject
     [Header("กล่องที่อนุญาตให้ใส่")]
     [Tooltip("ของชิ้นนี้สามารถใส่กล่องประเภทไหนได้บ้าง (S/M/L/ColdBox)")]
     public BoxKind[] allowedBoxTypes;
+
+    [Header("Dialogue")]
+    [Tooltip("บทสนทนากับลูกค้าเวลามารับ/ส่งของ")]
+    public ItemDialogueData dialogueData;
 }

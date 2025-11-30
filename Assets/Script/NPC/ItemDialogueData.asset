@@ -1,0 +1,62 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 622e9fcb5b000d7418201713e79739a1, type: 3}
+  m_Name: ItemDialogueData
+  m_EditorClassIdentifier: Assembly-CSharp::ItemDialogueData
+  steps:
+  - speaker: You
+    text: Send to no one has ever looked so good being dragged across the floor by
+      an invisible arm
+    voice: {fileID: 0}
+    gotoIndex: 1
+    onLineEndAction: 0
+    moneyAmount: 0
+    onLineEndDelay: 0
+    options: []
+  - speaker: Me
+    text: 
+    voice: {fileID: 0}
+    gotoIndex: 0
+    onLineEndAction: 0
+    moneyAmount: 0
+    onLineEndDelay: 0
+    options:
+    - text: yes
+      gotoIndex: 2
+    - text: no
+      gotoIndex: 3
+  - speaker: Me
+    text: Ok
+    voice: {fileID: 0}
+    gotoIndex: 4
+    onLineEndAction: 1
+    moneyAmount: 0
+    onLineEndDelay: 0
+    options: []
+  - speaker: You
+    text: Ok
+    voice: {fileID: 0}
+    gotoIndex: -1
+    onLineEndAction: 2
+    moneyAmount: 0
+    onLineEndDelay: 0
+    options: []
+  - speaker: You
+    text: Ok
+    voice: {fileID: 0}
+    gotoIndex: -1
+    onLineEndAction: 0
+    moneyAmount: 0
+    onLineEndDelay: 0
+    options: []
+  lockPlayer: 1
+  openSfx: {fileID: 0}

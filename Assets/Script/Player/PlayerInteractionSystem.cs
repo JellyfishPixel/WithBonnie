@@ -75,9 +75,18 @@ public class PlayerInteractionSystem : MonoBehaviour
                 TryInteract(); 
         }
 
-
         if (Input.GetKeyDown(interactKey))
+        {
+            // ถ้ามีไดอะล็อกอยู่ → ใช้กดข้าม/ต่อแทน
+            if (ItemDialogueManager.Instance != null && ItemDialogueManager.Instance.IsShowing)
+            {
+                ItemDialogueManager.Instance.SkipTypingOrNext();
+                return;
+            }
+
+            // ปกติ: raycast หา IInteractable แล้วเรียก Interact(player)
             TryInteract();
+        }
 
         if (Input.GetKeyDown(pickupKey))
         {

@@ -10,6 +10,7 @@ TagManager:
   - Box
   - BoxInteract
   - Reciept
+  - DialogTable
   layers:
   - Default
   - TransparentFX

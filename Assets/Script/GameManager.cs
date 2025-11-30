@@ -27,6 +27,8 @@ public class GameManager : MonoBehaviour
     [Header("Delivery Storage (max 3 per round)")]
     public int maxActiveBoxes = 3;
 
+    public bool shopIsOpen = true;
+
     [System.Serializable]
     public class DeliveryRecord
     {

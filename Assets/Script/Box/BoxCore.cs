@@ -21,6 +21,7 @@ public class BoxCore : MonoBehaviour
     [Header("Pickup Settings")]
     [Tooltip("แท็กที่จะใช้กับกล่อง เมื่อพร้อมให้ผู้เล่นยกได้")]
     public string boxPickupTag = "pickable";
+    public NPC ownerNPC;
 
     public static BoxCore Current { get; private set; }
 
@@ -95,6 +96,10 @@ public class BoxCore : MonoBehaviour
         Current = this;
     }
 
+    private void Start()
+    {
+        ownerNPC = FindFirstObjectByType<NPC>();
+    }
     void Update()
     {
         // อัปเดตฝาปิด
@@ -311,6 +316,7 @@ public class BoxCore : MonoBehaviour
         Debug.Log("[BoxCore] Label pasted → box is now pickable.");
         PackItemsIntoBox();
         MakeBoxPickable();
+        ownerNPC.HandleBoxStored();
 
         if (GameManager.Instance != null && currentItemInstance != null)
         {
