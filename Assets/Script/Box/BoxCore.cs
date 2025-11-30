@@ -310,7 +310,12 @@ public class BoxCore : MonoBehaviour
 
         Debug.Log("[BoxCore] Label pasted → box is now pickable.");
         PackItemsIntoBox();
-        MakeBoxPickable();   // จะตั้ง tag = boxPickupTag
+        MakeBoxPickable();
+
+        if (GameManager.Instance != null && currentItemInstance != null)
+        {
+            GameManager.Instance.RegisterNewDelivery(this, currentItemInstance);
+        }
     }
 
     void MakeBoxPickable()

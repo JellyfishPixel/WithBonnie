@@ -64,14 +64,12 @@ public class GameManager : MonoBehaviour
         UpdateGameTime();
     }
 
-    // ================== TIME SYSTEM ==================
+
 
     void UpdateGameTime()
     {
         timeAcc += Time.deltaTime;
 
-        // 1 ชั่วโมงในเกม ใช้ realSecondsPerGameHour วินาทีจริง
-        // => 1 นาทีในเกม = realSecondsPerGameHour / 60
         float secPerGameMinute = realSecondsPerGameHour / 60f;
 
         while (timeAcc >= secPerGameMinute)
@@ -93,13 +91,20 @@ public class GameManager : MonoBehaviour
             if (currentHour >= 24)
             {
                 currentHour = 0;
-                BoxInventory.Instance?.AdvanceOneDay();
-                currentDay++;
 
+                BoxInventory.Instance?.AdvanceOneDay();
+
+                currentDay++;
+                if (EconomyManager.Instance != null)
+                {
+                    EconomyManager.Instance.EndDayAndDeposit();
+                    totalMoney = EconomyManager.Instance.TotalFunds;
+                }
 
                 Debug.Log($"[GameManager] New Day: {currentDay}");
-                SyncDayToEconomy();    // ✅ ให้ EconomyManager รู้ว่าวันที่เปลี่ยน
+                SyncDayToEconomy();
             }
+
         }
 
         UpdateClockUI();
@@ -176,6 +181,8 @@ public class GameManager : MonoBehaviour
 
     public void CompleteDelivery(BoxCore box)
     {
+        if (box == null) return;
+
         DeliveryRecord rec = null;
         foreach (var r in activeBoxes)
         {
@@ -185,7 +192,7 @@ public class GameManager : MonoBehaviour
                 break;
             }
         }
-        if (rec == null) return;
+        if (rec == null || rec.itemInstance == null || rec.data == null) return;
 
         bool usedColdBox = false;
         if (rec.box != null)
@@ -198,14 +205,14 @@ public class GameManager : MonoBehaviour
         int effectiveLimit = rec.itemInstance.CalculateEffectiveDeadlineDays(baseLimit, usedColdBox);
 
         int dayCreated = rec.dayCreated;
-        int dayDelivered = GameManager.Instance.currentDay;
+        int dayDelivered = currentDay;
 
-        // แทนที่จะใช้ data.deliveryLimitDays ตรง ๆ
-        // คุณอาจจะเขียน CalculateReward ใหม่ให้รับ effectiveLimit เข้าไป
-        int reward = rec.itemInstance.CalculateReward(dayCreated, dayDelivered /*, effectiveLimit*/);
+        // ✅ ใช้ effectiveLimit ในการคิดดีเลย์จริง ๆ
+        int reward = rec.itemInstance.CalculateReward(dayCreated, dayDelivered, effectiveLimit);
 
         AddMoney(reward);
         activeBoxes.Remove(rec);
     }
+
 
 }

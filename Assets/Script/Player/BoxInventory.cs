@@ -93,6 +93,57 @@ public class BoxInventory : MonoBehaviour
             Debug.Log($"[BoxInventory] Slot {i} remainingDays = {s.remainingDays}");
         }
     }
+    // ================== DELIVERY FROM INVENTORY ==================
+
+    public int FindSlotByDestination(string destId)
+    {
+        if (string.IsNullOrEmpty(destId) || slots == null) return -1;
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            var s = slots[i];
+            if (!s.hasBox || s.itemData == null) continue;
+
+            // สมมติว่าใน DeliveryItemData มี field ชื่อ destinationId
+            if (s.itemData.destinationId == destId)
+                return i;
+        }
+
+        return -1;
+    }
+
+    public bool TryDeliverFromInventory(string destId, out int reward)
+    {
+        reward = 0;
+
+        int slotIndex = FindSlotByDestination(destId);
+        if (slotIndex < 0) return false;
+
+        var slot = slots[slotIndex];
+        if (!slot.hasBox || slot.itemData == null) return false;
+
+        var data = slot.itemData;
+
+        // ========= คำนวณค่า reward แบบง่าย =========
+        float r = data.baseReward;                     // เงินพื้นฐานจาก Data
+        float qualityFactor = Mathf.Clamp01(slot.itemQuality / 100f);
+        r *= qualityFactor;                           // คุณภาพต่ำ → เงินน้อยลง
+
+        // ถ้าคุณอยากให้ "ของพัง = 0 บาท" ง่าย ๆ:
+        if (slot.itemQuality <= 0f)
+            r = 0f;
+
+        reward = Mathf.Max(0, Mathf.RoundToInt(r));
+
+        // ลบของจาก inventory
+        slot.hasBox = false;
+        slot.itemData = null;
+        // (slot.itemQuality ยังเก็บค่าล่าสุดไว้ได้ เผื่อ debug)
+
+        Debug.Log($"[BoxInventory] DeliverFromInventory dest={destId}, reward={reward}");
+
+        return true;
+    }
 
     public bool StoreBox(BoxCore box)
     {

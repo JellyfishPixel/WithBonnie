@@ -113,7 +113,7 @@ public class DeliveryItemInstance : MonoBehaviour
         return Mathf.Max(1, reduced);
     }
 
-    public int CalculateReward(int dayCreated, int dayDelivered)
+    public int CalculateReward(int dayCreated, int dayDelivered, int effectiveLimitDays)
     {
         if (data == null) return 0;
 
@@ -126,10 +126,10 @@ public class DeliveryItemInstance : MonoBehaviour
         float qualityFactor = currentQuality / 100f;
         reward *= qualityFactor;
 
-        // 3) ถ้าส่งช้ากว่า deliveryLimitDays ให้หักเพิ่ม
-        if (daysUsed > data.deliveryLimitDays)
+        // 3) เช็คดีเลย์โดยใช้ effectiveLimitDays (จากระบบกล่องเย็น/ธรรมดา)
+        if (effectiveLimitDays > 0 && daysUsed > effectiveLimitDays)
         {
-            // ตัวอย่าง: ถ้าช้า → ได้แค่ 50%
+            // ตัวอย่าง: ถ้าส่งช้ากว่า deadline → ได้แค่ 50%
             reward *= 0.5f;
         }
 
@@ -139,4 +139,12 @@ public class DeliveryItemInstance : MonoBehaviour
 
         return Mathf.Max(0, Mathf.RoundToInt(reward));
     }
+
+    // overload เก่า เผื่อที่อื่นยังเรียกอยู่ จะใช้ deliveryLimitDays ตาม data ปกติ
+    public int CalculateReward(int dayCreated, int dayDelivered)
+    {
+        int limit = (data != null) ? data.deliveryLimitDays : 0;
+        return CalculateReward(dayCreated, dayDelivered, limit);
+    }
+
 }
