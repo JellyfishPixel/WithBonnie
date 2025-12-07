@@ -14,6 +14,10 @@ public class BoxInventory : MonoBehaviour
     [Header("Carry Protection")]
     [Tooltip("ตัวหารดาเมจตอนอยู่ใน inventory (2 = ครึ่งหนึ่ง, 3 = เหลือ 1/3)")]
     public int inventoryDamageDivisor = 2;
+    [Header("Water Damage (Inventory)")]
+    [Tooltip("ดาเมจต่อวินาทีสำหรับ item ที่ waterSensitive เมื่อผู้เล่นอยู่ในน้ำ")]
+    public float waterSensitiveDamagePerSecond = 1f;
+
 
     [Serializable]
     public class BoxSlot
@@ -29,17 +33,23 @@ public class BoxInventory : MonoBehaviour
         [Header("DELIVERY TIME")]
         public int remainingDays = 0;
 
+        [Header("STATE")]
+        public bool isDamaged;
+        public bool isBroken;
+
+        // 🔹 ใหม่: snapshot การป้องกันจากตอนยังเป็นกล่องในโลก
         [Header("PROTECTION SNAPSHOT")]
         [Tooltip("ตัวหารดาเมจรวมที่เซฟมาจากกล่อง + บับเบิล ตอนเก็บเข้าช่องนี้")]
         public int protectionDivisor = 1;
 
         [Tooltip("เปอร์เซ็นต์การเซฟดาเมจ (0–100%)")]
+        [Range(0f, 100f)]
         public float protectionPercent = 0f;
 
-        [Header("STATE")]
-        public bool isDamaged;
-        public bool isBroken;
+        [Tooltip("กล่องนี้เป็น Waterproof (กันน้ำ100%) หรือไม่")]
+        public bool isWaterproof = false;
     }
+
 
 
 
@@ -184,6 +194,10 @@ public class BoxInventory : MonoBehaviour
         float p01 = box.GetProtection01();
         slot.protectionPercent = p01 * 100f;
 
+        // 🔹 เซฟ flag กันน้ำ
+        slot.isWaterproof = box.IsWaterproof;
+
+
         // เซ็ตสถานะ
         UpdateItemState(slot);
 
@@ -238,6 +252,84 @@ public class BoxInventory : MonoBehaviour
         // slot.itemQuality จะยังเก็บค่าล่าสุดไว้ (ใช้ debug ได้)
 
         return core;
+    }
+    public void ApplyWaterDamageToSensitive(float deltaTime)
+    {
+        if (deltaTime <= 0f) return;
+
+        for (int i = 0; i < slots.Length; i++)
+        {
+            var s = slots[i];
+            if (!s.hasBox || s.itemData == null) continue;
+
+            var data = s.itemData;
+
+            // ของที่ไม่ได้ตั้งให้ sensitive กับน้ำ → ไม่โดน
+            if (!data.waterSensitive) continue;
+
+            // ถ้าของพังไปแล้ว → ปล่อย
+            if (s.isBroken) continue;
+
+            // กล่องกันน้ำ → กัน 100%
+            if (s.isWaterproof)
+            {
+                // debug เผื่อดูใน Console
+                // Debug.Log($"[WaterInv] Slot {i} {data.itemName}: waterproof box → no water damage");
+                continue;
+            }
+
+            // base damage = 1 หน่วย/วินาที (หรือค่าที่ตั้งใน waterSensitiveDamagePerSecond)
+            float baseDmgPerSec = waterSensitiveDamagePerSecond;
+
+            // รวม % การป้องกันจากกล่อง + บับเบิล
+            int divisor = Mathf.Max(1, s.protectionDivisor);
+            float effectiveDmgPerSec = baseDmgPerSec / divisor;
+
+            float dmg = effectiveDmgPerSec * deltaTime;
+            if (dmg <= 0f) dmg = 0.01f; // กันไม่ให้กลืนหายหมด
+
+            float oldQ = s.itemQuality;
+            s.itemQuality = Mathf.Clamp(oldQ - dmg, 0f, 100f);
+
+            UpdateItemState(s);
+
+            Debug.Log($"[WaterInv] slot {i} {data.itemName}: base={baseDmgPerSec:F2}/s, div={divisor}, " +
+                      $"dmg={dmg:F3}, Q {oldQ:F1}→{s.itemQuality:F1}");
+        }
+    }
+    public void ApplyWaterDamageTick(float damagePerTick)
+    {
+        for (int i = 0; i < slots.Length; i++)
+        {
+            var s = slots[i];
+            if (!s.hasBox || s.itemData == null) continue;
+
+            var data = s.itemData;
+
+            // ถ้าไอเท็มนี้ไม่พังเพราะน้ำ → ข้าม
+            if (!data.breaksOnWater) continue;
+
+            // ถ้ากล่องเป็นแบบกันน้ำ 100% → ไม่โดน
+            if (s.isWaterproof)
+            {
+                Debug.Log($"[WaterDamage] Slot {i} {data.itemName}: waterproof box → no damage");
+                continue;
+            }
+
+            // รวม % การเซฟจากกล่อง + บับเบิล (ใช้ protectionDivisor เดิม)
+            int divisor = Mathf.Max(1, s.protectionDivisor);
+
+            float dmg = damagePerTick / divisor;
+            if (dmg <= 0f) dmg = 0.1f; // กันไม่ให้ดาเมจกลายเป็น 0
+
+            float oldQ = s.itemQuality;
+            s.itemQuality = Mathf.Clamp(oldQ - dmg, 0f, 100f);
+
+            UpdateItemState(s);
+
+            Debug.Log($"[WaterDamage] Slot {i} {data.itemName}: base={damagePerTick}, div={divisor}, " +
+                      $"dmg={dmg:F2}, Q {oldQ:F1}→{s.itemQuality:F1}");
+        }
     }
 
     public void ApplyFallDamageToAll(float fallHeight)

@@ -15,7 +15,9 @@ public enum BoxKind
     Small,
     Medium,
     Large,
-    ColdBox
+    ColdBox,
+    WaterMedium,
+    WaterLarge
 }
 
 [CreateAssetMenu(
@@ -74,6 +76,18 @@ public class DeliveryItemData : ScriptableObject
     [Header("การเสียหายจากน้ำ / สภาพแวดล้อม")]
     [Tooltip("ของชิ้นนี้พังทันทีเมื่อโดนน้ำหรือไม่ (เช่น เอกสาร, อิเล็กทรอนิกส์ที่ไม่กันน้ำ)")]
     public bool breaksOnWater = true;
+
+    [Tooltip("ถ้า true ของชิ้นนี้จะค่อย ๆ เสียคุณภาพ 1 หน่วยต่อ 1 วินาที เมื่ออยู่ในน้ำ")]
+    public bool waterSensitive = false;
+
+
+    [Header("Water Damage")]
+    [Tooltip("เวลาที่ต้องอยู่ในน้ำต่อ 1 ดาเมจ")]
+    public float waterDamageInterval = 3f;
+
+    [Tooltip("ดาเมจต่อหนึ่ง interval จากน้ำ")]
+    public float waterDamagePerTick = 1f;
+
 
     [Header("กล่องที่อนุญาตให้ใส่")]
     [Tooltip("ของชิ้นนี้สามารถใส่กล่องประเภทไหนได้บ้าง (S/M/L/ColdBox)")]

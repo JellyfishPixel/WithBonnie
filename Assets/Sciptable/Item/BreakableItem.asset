@@ -25,5 +25,8 @@ MonoBehaviour:
   damagedThreshold: 80
   brokenThreshold: 20
   breaksOnWater: 1
-  allowedBoxTypes: 010000000200000000000000
+  waterSensitive: 1
+  waterDamageInterval: 3
+  waterDamagePerTick: 1
+  allowedBoxTypes: 0100000002000000000000000400000005000000
   dialogueData: {fileID: 11400000, guid: a5e8a1a350e035a43a52b0dd2cfb4b36, type: 2}

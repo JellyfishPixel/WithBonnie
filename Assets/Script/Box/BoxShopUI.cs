@@ -12,11 +12,15 @@ public class BoxShopUI : MonoBehaviour
     public int priceM = 15;
     public int priceL = 20;
     public int priceC = 25;
+    public int priceWaterM = 25;
+    public int priceWaterL = 30;
     [Header("Qty Text")]
     public TMP_Text qtySText;
     public TMP_Text qtyMText;
     public TMP_Text qtyLText;
     public TMP_Text qtyCText;
+    public TMP_Text qtyWaterMText;
+    public TMP_Text qtyWaterLText;
 
     [Header("Money Text")]
     public TMP_Text cashText;         // "CASH : 100$"
@@ -28,7 +32,7 @@ public class BoxShopUI : MonoBehaviour
     PlayerInteractionSystem currentPlayer;
     BoxShopTerminal currentTerminal;
 
-    int qtyS, qtyM, qtyL, qtyC;
+    int qtyS, qtyM, qtyL, qtyC, qtyWaterM, qtyWaterL;
 
     FirstPersonController fpc;
 
@@ -78,7 +82,8 @@ public class BoxShopUI : MonoBehaviour
             qtyM * priceM +
             qtyL * priceL +
             qtyC * priceC +
-
+            qtyWaterM * priceWaterM +
+            qtyWaterL * priceWaterL +
             qtyBubbleBasic * priceBubbleBasic +
             qtyBubbleStrong * priceBubbleStrong +
             qtyBubbleIce * priceBubbleIce +
@@ -140,6 +145,7 @@ public class BoxShopUI : MonoBehaviour
     void ResetSelections()
     {
         qtyS = qtyM = qtyL = qtyC = 0;
+        qtyWaterM = qtyWaterL = 0;
 
         qtyBubbleBasic = qtyBubbleStrong = qtyBubbleIce = 0;
         qtyTapeRed = qtyTapeBlue = qtyTapeGreen = 0;
@@ -151,6 +157,8 @@ public class BoxShopUI : MonoBehaviour
         if (qtyMText) qtyMText.text = qtyM.ToString();
         if (qtyLText) qtyLText.text = qtyL.ToString();
         if (qtyCText) qtyCText.text = qtyC.ToString();
+        if (qtyWaterMText) qtyWaterMText.text = qtyWaterM.ToString();
+        if (qtyWaterLText) qtyWaterLText.text = qtyWaterL.ToString();
 
         if (qtyBubbleBasicText) qtyBubbleBasicText.text = qtyBubbleBasic.ToString();
         if (qtyBubbleStrongText) qtyBubbleStrongText.text = qtyBubbleStrong.ToString();
@@ -189,6 +197,9 @@ public class BoxShopUI : MonoBehaviour
     public void AddL(int delta) { qtyL = Mathf.Max(0, qtyL + delta); RefreshUI(); }
 
     public void AddC(int delta) { qtyC = Mathf.Max(0, qtyC + delta); RefreshUI(); }
+    public void AddWaterM(int delta) { qtyWaterM = Mathf.Max(0, qtyWaterM + delta); RefreshUI(); }
+    public void AddWaterL(int delta){ qtyWaterL = Mathf.Max(0, qtyWaterL + delta); RefreshUI(); }
+
     public void AddBubbleBasic(int delta) { qtyBubbleBasic = Mathf.Max(0, qtyBubbleBasic + delta); RefreshUI(); }
     public void AddBubbleStrong(int delta) { qtyBubbleStrong = Mathf.Max(0, qtyBubbleStrong + delta); RefreshUI(); }
     public void AddBubbleIce(int delta) { qtyBubbleIce = Mathf.Max(0, qtyBubbleIce + delta); RefreshUI(); }
@@ -228,7 +239,8 @@ public class BoxShopUI : MonoBehaviour
         eco.AddBox(BoxSizeSimple.Medium, qtyM);
         eco.AddBox(BoxSizeSimple.Large, qtyL);
         eco.AddBox(BoxSizeSimple.ColdBox, qtyC);
-
+        eco.AddBox(BoxSizeSimple.WaterMedium, qtyWaterM);
+        eco.AddBox(BoxSizeSimple.WaterLarge, qtyWaterL);
         // บับเบิล (ต้องไปเพิ่ม method เหล่านี้ใน EconomyManager เอง)
         eco.AddBubble(BubbleType.Basic, qtyBubbleBasic);
         eco.AddBubble(BubbleType.Strong, qtyBubbleStrong);

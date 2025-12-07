@@ -67,6 +67,17 @@ namespace StarterAssets
         private bool _movementLocked = false;
         public bool IsMovementLocked => _movementLocked;
 
+        [Header("Water Slow")]
+        [Tooltip("Tag ของน้ำในฉาก (Collider ที่เป็นน้ำ)")]
+        public string WaterTag = "Water";
+
+        [Tooltip("ค่า multiplier สำหรับความเร็วเมื่ออยู่ในน้ำ (เช่น 0.4 = เหลือ 40%)")]
+        public float WaterSpeedMultiplier = 0.4f;
+
+        // runtime flag
+        private bool _inWater = false;
+
+
 
 #if ENABLE_INPUT_SYSTEM
         private PlayerInput _playerInput;
@@ -136,6 +147,23 @@ namespace StarterAssets
             CameraRotation();
         }
 
+        private void OnTriggerEnter(Collider other)
+        {
+            if (other.CompareTag(WaterTag))
+            {
+                _inWater = true;
+                Debug.Log("[FPC] Enter water -> slow movement");
+            }
+        }
+
+        private void OnTriggerExit(Collider other)
+        {
+            if (other.CompareTag(WaterTag))
+            {
+                _inWater = false;
+                Debug.Log("[FPC] Exit water -> normal movement");
+            }
+        }
 
         private void GroundedCheck()
 		{
@@ -166,52 +194,53 @@ namespace StarterAssets
 			}
 		}
 
-		private void Move()
-		{
-			// set target speed based on move speed, sprint speed and if sprint is pressed
-			float targetSpeed = _input.sprint ? SprintSpeed : MoveSpeed;
+        private void Move()
+        {
+            // base speed ปกติ (เดิน / วิ่ง)
+            float baseWalkSpeed = MoveSpeed;
+            float baseSprintSpeed = SprintSpeed;
+            bool isSprinting = _input.sprint;
 
-			// a simplistic acceleration and deceleration designed to be easy to remove, replace, or iterate upon
+            // 🔹 ถ้าอยู่ในน้ำ → คูณ multiplier ให้ช้าลงทั้งเดินและวิ่ง
+            if (_inWater)
+            {
+                baseWalkSpeed *= WaterSpeedMultiplier;
+                baseSprintSpeed *= WaterSpeedMultiplier;
+                isSprinting = false;
+            }
 
-			// note: Vector2's == operator uses approximation so is not floating point error prone, and is cheaper than magnitude
-			// if there is no input, set the target speed to 0
-			if (_input.move == Vector2.zero) targetSpeed = 0.0f;
+            float targetSpeed = isSprinting ? baseSprintSpeed : baseWalkSpeed;
 
-			// a reference to the players current horizontal velocity
-			float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
+            // ถ้าไม่มี input → targetSpeed = 0
+            if (_input.move == Vector2.zero) targetSpeed = 0.0f;
 
-			float speedOffset = 0.1f;
-			float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
+            // ด้านล่างนี้ให้ใช้ของเดิมทั้งหมดได้เลย ↓↓↓
+            float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
 
-			// accelerate or decelerate to target speed
-			if (currentHorizontalSpeed < targetSpeed - speedOffset || currentHorizontalSpeed > targetSpeed + speedOffset)
-			{
-				// creates curved result rather than a linear one giving a more organic speed change
-				// note T in Lerp is clamped, so we don't need to clamp our speed
-				_speed = Mathf.Lerp(currentHorizontalSpeed, targetSpeed * inputMagnitude, Time.deltaTime * SpeedChangeRate);
+            float speedOffset = 0.1f;
+            float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
 
-				// round speed to 3 decimal places
-				_speed = Mathf.Round(_speed * 1000f) / 1000f;
-			}
-			else
-			{
-				_speed = targetSpeed;
-			}
+            if (currentHorizontalSpeed < targetSpeed - speedOffset || currentHorizontalSpeed > targetSpeed + speedOffset)
+            {
+                _speed = Mathf.Lerp(currentHorizontalSpeed, targetSpeed * inputMagnitude, Time.deltaTime * SpeedChangeRate);
+                _speed = Mathf.Round(_speed * 1000f) / 1000f;
+            }
+            else
+            {
+                _speed = targetSpeed;
+            }
 
-			// normalise input direction
-			Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
+            Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
 
-			// note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
-			// if there is a move input rotate player when the player is moving
-			if (_input.move != Vector2.zero)
-			{
-				// move
-				inputDirection = transform.right * _input.move.x + transform.forward * _input.move.y;
-			}
+            if (_input.move != Vector2.zero)
+            {
+                inputDirection = transform.right * _input.move.x + transform.forward * _input.move.y;
+            }
 
-			// move the player
-			_controller.Move(inputDirection.normalized * (_speed * Time.deltaTime) + new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
-		}
+            _controller.Move(inputDirection.normalized * (_speed * Time.deltaTime) +
+                             new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+        }
+
 
         public void LockMovement()
         {

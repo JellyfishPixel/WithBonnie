@@ -11,6 +11,7 @@ TagManager:
   - BoxInteract
   - Reciept
   - DialogTable
+  - Water
   layers:
   - Default
   - TransparentFX

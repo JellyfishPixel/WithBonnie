@@ -30,6 +30,10 @@ public class GameManager : MonoBehaviour
     public bool shopIsOpen = true;
     [Header("Customer State")]
     public NPC currentCustomer;
+
+    public MinimapController minimap;
+    public DestinationRegistry destinationRegistry;
+
     [System.Serializable]
     public class DeliveryRecord
     {
@@ -37,6 +41,11 @@ public class GameManager : MonoBehaviour
         public DeliveryItemInstance itemInstance;
         public DeliveryItemData data;
         public int dayCreated;
+
+        // ==== ใหม่ สำหรับ minimap/destination ====
+        public string destinationId;   // มาจาก DeliveryItemData
+        public Transform worldTarget;  // จุดจริงในฉาก (หาได้จาก DestinationRegistry)
+        public bool minimapRegistered; // เคยส่งไปให้ minimap หรือยัง
     }
 
     // กล่องที่อยู่ใน "รอบนี้" (สูงสุด 3)
@@ -158,12 +167,19 @@ public class GameManager : MonoBehaviour
     }
 
     // ================== DELIVERY ==================
+    DestinationRegistry GetDestinationRegistry()
+    {
+        if (destinationRegistry == null)
+        {
+            destinationRegistry = FindFirstObjectByType<DestinationRegistry>();
+        }
+        return destinationRegistry;
+    }
 
     public void RegisterNewDelivery(BoxCore box, DeliveryItemInstance item)
     {
         if (!box || !item || !item.data) return;
 
-        // ถ้าเต็ม 3 กล่องแล้ว ให้คุณตัดสินใจเองว่าจะทำอย่างไร
         if (activeBoxes.Count >= maxActiveBoxes)
         {
             Debug.LogWarning("[GameManager] Active boxes is full (3). ต้องไปจัดการ UI เอาออกก่อน");
@@ -177,10 +193,30 @@ public class GameManager : MonoBehaviour
             data = item.data,
             dayCreated = currentDay
         };
+
+        // ====== ใหม่: ผูกกับ destinationId & minimap ======
+        record.destinationId = item.data.destinationId;
+
+        if (!string.IsNullOrEmpty(record.destinationId))
+        {
+            var reg = GetDestinationRegistry();
+            if (reg != null)
+            {
+                record.worldTarget = reg.GetPoint(record.destinationId);
+                if (record.worldTarget != null && minimap != null)
+                {
+                    minimap.RegisterDeliveryTarget(record.worldTarget);
+                    record.minimapRegistered = true;
+                }
+            }
+        }
+        // ==================================================
+
         activeBoxes.Add(record);
 
         Debug.Log($"[GameManager] Register box: {record.data.itemName} day={currentDay}");
     }
+
 
     public void CompleteDelivery(BoxCore box)
     {
@@ -225,6 +261,14 @@ public class GameManager : MonoBehaviour
 
         AddMoney(reward);
         activeBoxes.Remove(rec);
+        // ==== ใหม่: ลบจาก minimap ถ้าเคยลงทะเบียนไว้ ====
+        if (rec.minimapRegistered && minimap != null && rec.worldTarget != null)
+        {
+            minimap.UnregisterDeliveryTarget(rec.worldTarget);
+            rec.minimapRegistered = false;
+        }
+        // ===================================================
+
     }
 
 

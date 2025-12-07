@@ -9,7 +9,8 @@ public class BoxSpawner : MonoBehaviour, IInteractable
     public GameObject boxMediumPrefab;
     public GameObject boxLargePrefab;
     public GameObject CoolBox;
-
+    public GameObject boxWaterMediumPrefab;
+    public GameObject boxWaterLargePrefab;
     [Header("Box Size นี้ใช้กับจุดกดนี้")]
     public BoxSizeSimple sizeForThisSpawner = BoxSizeSimple.Small;
 
@@ -40,6 +41,8 @@ public class BoxSpawner : MonoBehaviour, IInteractable
             case BoxSizeSimple.Medium: prefab = boxMediumPrefab; break;
             case BoxSizeSimple.Large: prefab = boxLargePrefab; break;
             case BoxSizeSimple.ColdBox: prefab = CoolBox; break;
+            case BoxSizeSimple.WaterMedium: prefab = boxWaterMediumPrefab; break;
+            case BoxSizeSimple.WaterLarge: prefab = boxWaterLargePrefab; break;
         }
 
         if (!prefab)

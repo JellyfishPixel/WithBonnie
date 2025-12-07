@@ -48,6 +48,9 @@ public class BoxCore : MonoBehaviour
     public bool IsFinsihedClose => lidsClosed;
     public BubbleType BubbleType => bubbleType;
     public bool HasIceBubble => bubbleType == BubbleType.Ice;
+    [Header("WATER PROTECTION")]
+    public bool isWaterproofBox = false;
+    public bool IsWaterproof => isWaterproofBox;
 
     Rigidbody rb;
 
@@ -162,25 +165,25 @@ public class BoxCore : MonoBehaviour
 
     public int GetTotalDamageDivisor()
     {
-        // เริ่มจากกล่องก่อน
         int divisor = Mathf.Max(1, boxDamageDivisor);
 
-        // เพิ่มตามบับเบิล
         switch (bubbleType)
         {
             case BubbleType.Basic:
-                divisor *= 2;   // กันเพิ่ม
+                divisor *= 2;
                 break;
             case BubbleType.Strong:
             case BubbleType.Ice:
-                divisor *= 3;   // กันเยอะกว่า
+                divisor *= 3;
+                break;
+
+            default:
                 break;
         }
 
         return Mathf.Max(1, divisor);
     }
 
-    // 0–1 (เช่น 0.66 = เซฟดาเมจ 66%)
     public float GetProtection01()
     {
         int d = GetTotalDamageDivisor();

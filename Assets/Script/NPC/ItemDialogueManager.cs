@@ -113,7 +113,7 @@ public class ItemDialogueManager : MonoBehaviour
     void Start()
     {
         SetCursor(false);
-        if (!player) player = FindFirstObjectByType<FirstPersonController>();
+        player = FindFirstObjectByType<FirstPersonController>();
     }
 
     void ResetSessionState(bool clearChoices)

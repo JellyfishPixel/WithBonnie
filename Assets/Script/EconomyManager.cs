@@ -1,7 +1,16 @@
 ﻿using TMPro;
 using UnityEngine;
 
-public enum BoxSizeSimple { Small, Medium, Large, ColdBox }
+public enum BoxSizeSimple
+{
+    Small,
+    Medium,
+    Large,
+    ColdBox,
+    WaterMedium,  // กล่องกันน้ำ M
+    WaterLarge    // กล่องกันน้ำ L
+}
+
 
 public class EconomyManager : MonoBehaviour
 {
@@ -27,6 +36,9 @@ public class EconomyManager : MonoBehaviour
     public int boxStockM = 0;
     public int boxStockL = 0;
     public int boxStockCold = 0;
+    // 🆕 กล่องกันน้ำ
+    public int boxStockWaterM = 0;
+    public int boxStockWaterL = 0;
     // ========= PlayerPrefs Keys =========
     const string KEY_DAY = "Eco_Day";
     const string KEY_CASH = "Eco_CashToday";
@@ -35,6 +47,8 @@ public class EconomyManager : MonoBehaviour
     const string KEY_BOX_M = "Eco_BoxM";
     const string KEY_BOX_L = "Eco_BoxL";
     const string KEY_BOX_Cold = "Eco_ColdBox";
+    const string KEY_BOX_WM = "Eco_BoxWaterM";
+    const string KEY_BOX_WL = "Eco_BoxWaterL";
     const string KEY_TAPE_RED = "Eco_TapeRedUses";
     const string KEY_TAPE_BLUE = "Eco_TapeBlueUses";
     const string KEY_TAPE_GREEN = "Eco_TapeGreenUses";
@@ -188,6 +202,8 @@ public class EconomyManager : MonoBehaviour
             BoxSizeSimple.Medium => boxStockM > 0,
             BoxSizeSimple.Large => boxStockL > 0,
             BoxSizeSimple.ColdBox => boxStockCold > 0,
+            BoxSizeSimple.WaterMedium => boxStockWaterM > 0,
+            BoxSizeSimple.WaterLarge => boxStockWaterL > 0,
             _ => false
         };
     }
@@ -202,6 +218,8 @@ public class EconomyManager : MonoBehaviour
             case BoxSizeSimple.Medium: boxStockM--; break;
             case BoxSizeSimple.Large: boxStockL--; break;
             case BoxSizeSimple.ColdBox: boxStockCold--; break;
+            case BoxSizeSimple.WaterMedium: boxStockWaterM--; break;
+            case BoxSizeSimple.WaterLarge: boxStockWaterL--; break;
         }
 
         SaveToPrefs();
@@ -218,11 +236,14 @@ public class EconomyManager : MonoBehaviour
             case BoxSizeSimple.Medium: boxStockM += amount; break;
             case BoxSizeSimple.Large: boxStockL += amount; break;
             case BoxSizeSimple.ColdBox: boxStockCold += amount; break;
+            case BoxSizeSimple.WaterMedium: boxStockWaterM += amount; break;
+            case BoxSizeSimple.WaterLarge: boxStockWaterL += amount; break;
         }
 
         SaveToPrefs();
         UpdateMoneyUI();
     }
+
 
     int GetTapeUses(TapeColor color)
     {
@@ -352,6 +373,8 @@ public class EconomyManager : MonoBehaviour
         PlayerPrefs.SetInt(KEY_TAPE_RED, tapeUsesRed);
         PlayerPrefs.SetInt(KEY_TAPE_BLUE, tapeUsesBlue);
         PlayerPrefs.SetInt(KEY_TAPE_GREEN, tapeUsesGreen);
+        PlayerPrefs.SetInt(KEY_BOX_WM, boxStockWaterM);
+        PlayerPrefs.SetInt(KEY_BOX_WL, boxStockWaterL);
 
         // 🔹 เซฟ "จำนวนครั้งที่ใช้ได้" แทน stock เดิม
         PlayerPrefs.SetInt(KEY_BUBBLE_BASIC, bubbleUsesBasic);
@@ -373,6 +396,8 @@ public class EconomyManager : MonoBehaviour
         tapeUsesRed = PlayerPrefs.GetInt(KEY_TAPE_RED, 0);
         tapeUsesBlue = PlayerPrefs.GetInt(KEY_TAPE_BLUE, 0);
         tapeUsesGreen = PlayerPrefs.GetInt(KEY_TAPE_GREEN, 0);
+        boxStockWaterM = PlayerPrefs.GetInt(KEY_BOX_WM, 0);
+        boxStockWaterL = PlayerPrefs.GetInt(KEY_BOX_WL, 0);
 
         // 🔹 โหลดกลับเข้า uses
         bubbleUsesBasic = PlayerPrefs.GetInt(KEY_BUBBLE_BASIC, 0);

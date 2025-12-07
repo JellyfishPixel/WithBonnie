@@ -1,11 +1,6 @@
 ﻿using UnityEngine;
 
-/// <summary>
-/// ตัวแทนไอเท็ม 1 ชิ้นในโลก 3D
-/// - ผูกกับ DeliveryItemData (ScriptableObject)
-/// - เก็บคุณภาพปัจจุบัน
-/// - คำนวนดาเมจจากการชน / การตก / จาก container (กล่อง / ตัวผู้เล่น)
-/// </summary>
+
 [RequireComponent(typeof(Collider))]
 [RequireComponent(typeof(Rigidbody))]
 public class DeliveryItemInstance : MonoBehaviour
@@ -27,6 +22,19 @@ public class DeliveryItemInstance : MonoBehaviour
 
     Rigidbody rb;
 
+    [Header("Water Damage")]
+    [Tooltip("เวลาที่ต้องอยู่ในน้ำต่อ 1 ดาเมจ")]
+    public float waterDamageInterval = 3f;
+
+    [Tooltip("ดาเมจต่อหนึ่ง interval จากน้ำ")]
+    public float waterDamagePerTick = 1f;
+
+
+
+    bool inWater = false;
+    float waterTimer = 0f;
+
+
     void Awake()
     {
         rb = GetComponent<Rigidbody>();
@@ -35,21 +43,94 @@ public class DeliveryItemInstance : MonoBehaviour
         if (data != null)
             currentQuality = data.baseQuality;
     }
-
-    // -------------------------------------------------------
-    // ดาเมจจากการชนโดยตรง (ของชิ้นนี้ชนกับพื้น/กำแพงเอง)
-    // -------------------------------------------------------
-    void OnCollisionEnter(Collision collision)
+    private void OnTriggerEnter(Collider other)
     {
         if (data == null || isBroken) return;
 
-        // ถ้าอยากใช้ logic โดนน้ำค่อยมาเปิดทีหลัง
-        // if (collision.collider.CompareTag("Water") && data.breaksOnWater)
-        // {
-        //     ApplyDamage(999f);
-        //     Debug.Log($"[ItemInstance] {data.itemName} พังเพราะโดนน้ำ");
-        //     return;
-        // }
+        if (!other.CompareTag("Water")) return;
+
+        // กรณี "พังทันทีเมื่อโดนน้ำ"
+        if (data.breaksOnWater)
+        {
+            Debug.Log($"[ItemInstance] {data.itemName} hit water -> breaksOnWater=true");
+            // ทำให้พังเลย: ดาเมจเท่ากับคุณภาพที่เหลือ
+            ApplyDamage(currentQuality);
+            return;
+        }
+
+        // กรณี "ค่อย ๆ เสื่อมเมื่ออยู่ในน้ำ"
+        if (data.waterSensitive)
+        {
+            inWater = true;
+            waterTimer = 0f;
+            Debug.Log($"[ItemInstance] {data.itemName} enter water (waterSensitive)");
+        }
+    }
+
+    private void OnTriggerExit(Collider other)
+    {
+        if (!other.CompareTag("Water")) return;
+
+        if (inWater)
+        {
+            inWater = false;
+            Debug.Log("[ItemInstance] leave water");
+        }
+    }
+
+
+    void Update()
+    {
+        if (!inWater || data == null || isBroken) return;
+
+        // ถ้าของนี้ไม่แคร์น้ำ (breaksOnWater=false) จะข้าม
+        if (!data.breaksOnWater) return;
+
+        waterTimer += Time.deltaTime;
+        if (waterTimer >= waterDamageInterval)
+        {
+            waterTimer -= waterDamageInterval;
+
+            // 3 วินาที → 1 ดาเมจ
+            ApplyDamage(waterDamagePerTick);
+
+            Debug.Log($"[ItemInstance] {data.itemName} water dmg={waterDamagePerTick}, Q={currentQuality:F0}");
+        }
+
+        HandleWaterDamage();
+    }
+    private void HandleWaterDamage()
+    {
+        if (!inWater) return;
+        if (data == null || isBroken) return;
+
+        // ถ้าไม่ได้ตั้งให้ sensitive ก็ไม่ต้องทำอะไร
+        if (!data.waterSensitive) return;
+
+        // นับเวลา
+        waterTimer += Time.deltaTime;
+
+        // ทุกๆ 1 วินาที -> ลดคุณภาพ 1 หน่วย
+        while (waterTimer >= 1f)
+        {
+            waterTimer -= 1f;
+
+            float before = currentQuality;
+            ApplyDamage(1f);  // ลด 1 หน่วย
+
+            Debug.Log($"[ItemInstance] {data.itemName} water tick dmg=1, Q {before:F1} -> {currentQuality:F1}");
+
+            if (isBroken)     // ถ้าพังแล้ว จะไม่ต้องนับต่อ
+            {
+                inWater = false;
+                break;
+            }
+        }
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        if (data == null || isBroken) return;
 
         // ใช้ความเร็วชนแปลงเป็น "ความสูงที่ตก" โดยประมาณ
         float v = collision.relativeVelocity.magnitude;
