@@ -24,6 +24,7 @@ public class TapeDragScaler : MonoBehaviour
     [SerializeField] private TapeDispenser selectedDispenser = null;
 
     public bool isTapeDone;
+    [SerializeField] private PlayerInteractionSystem interactionSystem;
 
 
     private Vector3 baseLocalScale;
@@ -62,7 +63,15 @@ public class TapeDragScaler : MonoBehaviour
     void Start()
     {
         if (!tapeObject) { enabled = false; return; }
+        if (!interactionSystem)
+            interactionSystem = FindAnyObjectByType<PlayerInteractionSystem>();
 
+        if (!interactionSystem)
+        {
+            Debug.LogError("[TapeDragScaler] PlayerInteractionSystem not found");
+            enabled = false;
+            return;
+        }
         baseLocalScale = tapeObject.transform.localScale;
         parentForScale = tapeObject.transform.parent;
 
@@ -79,10 +88,16 @@ public class TapeDragScaler : MonoBehaviour
         // กล่องต้องปิดฝาก่อนถึงจะใช้เทปได้
         if (!currentBox.IsFinsihedClose) return;
 
+        if (interactionSystem.IsMovementLocked())
+            return;
+
         // ---- คลิกเลือก TapeDispenser ----
         if (Input.GetMouseButtonDown(0))
         {
-            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            Camera cam = interactionSystem.GetCurrentCamera();
+            if (!cam) return;
+
+            Ray ray = cam.ScreenPointToRay(Input.mousePosition);
             if (Physics.Raycast(ray, out RaycastHit hit, 3f))
             {
                 var dispenser = hit.collider.GetComponent<TapeDispenser>();
@@ -221,10 +236,15 @@ public class TapeDragScaler : MonoBehaviour
 
     Vector3 GetMouseWorldPositionAtY(float yLevel)
     {
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Camera cam = interactionSystem.GetCurrentCamera();
+        if (!cam) return tapeStart.position;
+
+        Ray ray = cam.ScreenPointToRay(Input.mousePosition);
         Plane plane = new Plane(Vector3.up, new Vector3(0, yLevel, 0));
         if (plane.Raycast(ray, out float distance))
             return ray.GetPoint(distance);
+
         return tapeStart.position;
     }
+
 }

@@ -4,7 +4,10 @@ using UnityEngine;
 public class PlayerInteractionSystem : MonoBehaviour
 {
     [Header("Camera")]
-    public Camera playerCamera;
+    public Camera playerCamera; // fallback เท่านั้น
+
+    public Camera currentCamera;
+
 
     [Header("Interact")]
     public KeyCode interactKey = KeyCode.Mouse0;
@@ -39,25 +42,28 @@ public class PlayerInteractionSystem : MonoBehaviour
     readonly List<LayerState> layerStates = new();
 
     int holdLayer = -1;
-
     void Awake()
     {
+        // fallback เท่านั้น
         if (!playerCamera)
             playerCamera = Camera.main;
 
-        if (!holdPoint && playerCamera)
+        // ตั้งค่าเริ่มต้นให้ currentCamera
+        if (!currentCamera)
+            currentCamera = playerCamera;
+
+        if (!holdPoint && currentCamera)
         {
             var go = new GameObject("HoldPoint");
             holdPoint = go.transform;
-            holdPoint.SetParent(playerCamera.transform, false);
+            holdPoint.SetParent(currentCamera.transform, false);
             holdPoint.localPosition = new Vector3(0, 0, 1.0f);
             holdPoint.localRotation = Quaternion.identity;
         }
 
         holdLayer = LayerMask.NameToLayer(holdLayerName);
-        if (holdLayer < 0)
-            Debug.LogWarning($"[PlayerInteractionSystem] Layer '{holdLayerName}' ยังไม่มีใน Project Settings");
     }
+
     void Update()
     {
         if (isMovementLocked) return;
@@ -102,9 +108,9 @@ public class PlayerInteractionSystem : MonoBehaviour
 
     void TryInteract()
     {
-        if (!playerCamera) return;
+        if (!currentCamera) return;
 
-        Ray ray = new(playerCamera.transform.position, playerCamera.transform.forward);
+        Ray ray = new(currentCamera.transform.position, currentCamera.transform.forward);
         if (Physics.Raycast(ray, out var hit, interactDistance, interactMask, QueryTriggerInteraction.Ignore))
         {
             var interactable =
@@ -116,12 +122,12 @@ public class PlayerInteractionSystem : MonoBehaviour
     }
     void TryPickup()
     {
-        if (!playerCamera || !holdPoint) return;
+        if (!currentCamera || !holdPoint) return;
 
         // ❗ อย่า raycast โดนของที่ถือ
         int mask = ~LayerMask.GetMask(holdLayerName);
 
-        Ray ray = new(playerCamera.transform.position, playerCamera.transform.forward);
+        Ray ray = new(currentCamera.transform.position, currentCamera.transform.forward);
         if (!Physics.Raycast(ray, out var hit, pickupDistance, mask, QueryTriggerInteraction.Ignore))
             return;
 
@@ -213,10 +219,10 @@ public class PlayerInteractionSystem : MonoBehaviour
 
         HeldObject.transform.SetParent(originalParent, true);
 
-        if (playerCamera)
+        if (currentCamera)
         {
             Vector3 up = Vector3.up;
-            Vector3 forward = Vector3.ProjectOnPlane(playerCamera.transform.forward, up).normalized;
+            Vector3 forward = Vector3.ProjectOnPlane(currentCamera.transform.forward, up).normalized;
             HeldObject.transform.rotation = Quaternion.LookRotation(forward, up);
         }
 
@@ -287,4 +293,20 @@ public class PlayerInteractionSystem : MonoBehaviour
     {
         return isMovementLocked;
     }
+
+    public void SetCurrentCamera(Camera cam)
+    {
+        if (cam == null)
+        {
+            Debug.LogWarning("[PlayerInteractionSystem] SetCurrentCamera called with null");
+            return;
+        }
+
+        currentCamera = cam;
+    }
+    public Camera GetCurrentCamera()
+    {
+        return currentCamera;
+    }
+
 }
