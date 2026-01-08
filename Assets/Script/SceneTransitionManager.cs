@@ -2,12 +2,14 @@
 using UnityEngine.SceneManagement;
 using StarterAssets;
 using UnityEngine.InputSystem;
+using static PlayerInteractionSystem;
 
 
 public class SceneTransitionManager : MonoBehaviour
 {
     public static SceneTransitionManager Instance { get; private set; }
 
+    public GameObject InteractPoint;
     [Header("Scene")]
     public string mainSceneName = "Main";
 
@@ -121,9 +123,12 @@ public class SceneTransitionManager : MonoBehaviour
             interactionSystem.SetCurrentCamera(
                 isMain ? firstPersonCamera : thirdPersonCamera
             );
+            interactionSystem.interactRayMode =
+    isMain ? InteractRayMode.Camera : InteractRayMode.Player;
+
         }
 
-
+        InteractPoint.SetActive(isMain);
         // ===== 3. ตัวละคร =====
         if (characterVisual != null)
             characterVisual.SetActive(!isMain); // FP = ปิด, TP = เปิด
@@ -137,7 +142,7 @@ public class SceneTransitionManager : MonoBehaviour
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
-
+        //InteractPoint.SetActive(isMain);
         if (isMain && firstPersonController != null)
         {
             // 1. ปิด controller ก่อน
@@ -166,8 +171,9 @@ public class SceneTransitionManager : MonoBehaviour
         {
             if (thirdPersonController != null)
                 thirdPersonController.enabled = true;
-        }
 
+        }
+        
         Debug.Log(isMain
             ? "[SceneTransition] FIRST PERSON MODE"
             : "[SceneTransition] THIRD PERSON MODE");

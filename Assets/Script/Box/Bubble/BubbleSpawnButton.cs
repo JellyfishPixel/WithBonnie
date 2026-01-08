@@ -5,8 +5,12 @@ public class BubbleSpawnButton : MonoBehaviour, IInteractable
     public BubbleType bubbleType = BubbleType.Basic;
     private BoxBubble targetBubble;
 
-    public void Interact(PlayerInteractionSystem interactor)
+    public void Interact(PlayerInteractionSystem interactor,
+                         PlayerInteractionSystem.InteractionType type)
     {
+        // Mouse0 เท่านั้น
+        if (type != PlayerInteractionSystem.InteractionType.Primary)
+            return;
         var currentBox = BoxCore.Current;
         if (currentBox == null)
         {

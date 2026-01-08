@@ -9,8 +9,12 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
     public string successMessage = "ส่งของสำเร็จ!";
     public string noBoxMessage = "ไม่มีของปลายทางนี้อยู่ในกล่องที่ถืออยู่";
 
-    public void Interact(PlayerInteractionSystem player)
+    public void Interact(PlayerInteractionSystem interactor,
+                         PlayerInteractionSystem.InteractionType type)
     {
+        // E เท่านั้น
+        if (type != PlayerInteractionSystem.InteractionType.Secondary)
+            return;
         if (BoxInventory.Instance == null)
         {
             Debug.Log("[DeliveryPoint] BoxInventory.Instance = null");

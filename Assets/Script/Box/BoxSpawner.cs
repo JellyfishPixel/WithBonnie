@@ -16,8 +16,12 @@ public class BoxSpawner : MonoBehaviour, IInteractable
 
     public BoxCore currentBox;
 
-    public void Interact(PlayerInteractionSystem player)
+    public void Interact(PlayerInteractionSystem interactor,
+                       PlayerInteractionSystem.InteractionType type)
     {
+        // Mouse0 เท่านั้น
+        if (type != PlayerInteractionSystem.InteractionType.Primary)
+            return;
         currentBox = FindFirstObjectByType<BoxCore>();
         if(currentBox != null)  return;
         TrySpawnBox();

@@ -7,14 +7,16 @@ public class ShopSignInteract : MonoBehaviour, IInteractable
     public string openText = "OPEN";
     public string closedText = "CLOSED";
 
-    public void Interact(PlayerInteractionSystem player)
+    public void Interact(PlayerInteractionSystem interactor,
+                       PlayerInteractionSystem.InteractionType type)
     {
+        // Mouse0 เท่านั้น
+     
+
         var gm = GameManager.Instance;
-        if (gm == null)
-        {
-            Debug.LogWarning("[ShopSignInteract] GameManager.Instance is null");
+
+        if (type != PlayerInteractionSystem.InteractionType.Primary)
             return;
-        }
 
         // ถ้าร้านกำลัง "เปิดอยู่" → พยายามจะปิด
         if (gm.shopIsOpen)

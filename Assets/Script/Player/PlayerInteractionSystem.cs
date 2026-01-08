@@ -3,16 +3,36 @@ using UnityEngine;
 
 public class PlayerInteractionSystem : MonoBehaviour
 {
+    public enum InteractionType
+    {
+        Primary,    // ใช้, คุย, เปิด
+        Secondary,  // สำรอง
+        Alternate   // พิเศษ
+    }
+    public enum InteractRayMode
+    {
+        Camera,   // First Person
+        Player    // Third Person
+    }
+
+    [Header("Interact Keys")]
+    public KeyCode[] primaryInteractKeys;   // E, Mouse0
+    public KeyCode[] secondaryInteractKeys; // F
+    [Header("Interact")]
+    public float interactDistance = 3f;
+    public LayerMask interactMask = ~0;
+
     [Header("Camera")]
     public Camera playerCamera; // fallback เท่านั้น
 
     public Camera currentCamera;
+    [Header("Interact Ray")]
+    public InteractRayMode interactRayMode = InteractRayMode.Camera;
+
+    // ใช้ตอน Third Person (เช่น chest / center)
+    public Transform playerRayOrigin;
 
 
-    [Header("Interact")]
-    public KeyCode interactKey = KeyCode.Mouse0;
-    public float interactDistance = 3f;
-    public LayerMask interactMask = ~0;
 
     [Header("Pickup")]
     public KeyCode pickupKey = KeyCode.Mouse0;
@@ -68,34 +88,11 @@ public class PlayerInteractionSystem : MonoBehaviour
     {
         if (isMovementLocked) return;
 
-        if (Input.GetKeyDown(storeBoxKey))
-        {
-            if (HeldObject != null)
-                StoreHeldBoxToInventory();
-            else
-                TryInteract();
-        }
-
-        if (Input.GetKeyDown(interactKey))
-        {
-            if (ItemDialogueManager.Instance != null &&
-                ItemDialogueManager.Instance.IsShowing)
-            {
-                ItemDialogueManager.Instance.SkipTypingOrNext();
-                return;
-            }
-
-            TryInteract();
-        }
-
-        if (Input.GetKeyDown(pickupKey))
-        {
-            if (HeldObject == null) TryPickup();
-            else Drop();
-        }
-
+        HandleInteractInput();
+        HandlePickupInput();
         HandleHoldRotation();
     }
+
 
     void LateUpdate()
     {
@@ -105,40 +102,134 @@ public class PlayerInteractionSystem : MonoBehaviour
             HeldObject.transform.localRotation = targetLocalRot;
         }
     }
-
-    void TryInteract()
+    bool IsAnyKeyDown(KeyCode[] keys)
     {
-        if (!currentCamera) return;
+        foreach (var k in keys)
+            if (Input.GetKeyDown(k))
+                return true;
+        return false;
+    }
+    void HandlePickupInput()
+    {
+        if (!Input.GetKeyDown(pickupKey)) return;
 
-        Ray ray = new(currentCamera.transform.position, currentCamera.transform.forward);
-        if (Physics.Raycast(ray, out var hit, interactDistance, interactMask, QueryTriggerInteraction.Ignore))
+        if (HeldObject == null)
+            TryPickup();
+        else
+            Drop();
+    }
+
+    void HandleInteractInput()
+    {
+        InteractionType? type = null;
+
+        if (IsAnyKeyDown(primaryInteractKeys))
+            type = InteractionType.Primary;
+        else if (IsAnyKeyDown(secondaryInteractKeys))
+            type = InteractionType.Secondary;
+
+        if (type == null) return;
+        if (type == InteractionType.Secondary)
         {
-            var interactable =
-                hit.collider.GetComponent<IInteractable>() ??
-                hit.collider.GetComponentInParent<IInteractable>();
-
-            interactable?.Interact(this);
+            // ต้องถือกล่องอยู่
+            if (HeldObject != null)
+            {
+                // เช็คว่ากล้องกำลังเล็งกล่องที่เสร็จแล้วหรือไม่
+                if (CanStoreHeldBox())
+                {
+                    StoreHeldBoxToInventory();
+                }
+                else
+                {
+                    Debug.Log("กล่องยังไม่เสร็จ เก็บไม่ได้");
+                }
+                return;
+            }
         }
+        if (ItemDialogueManager.Instance != null &&
+            ItemDialogueManager.Instance.IsShowing)
+        {
+            ItemDialogueManager.Instance.SkipTypingOrNext();
+            return;
+        }
+
+        TryInteract(type.Value);
+    }
+    bool CanStoreHeldBox()
+    {
+        if (HeldObject == null) return false;
+
+        var box = HeldObject.GetComponent<BoxCore>();
+        if (!box) return false;
+
+        // ✅ แค่เช็คว่าเสร็จแล้วพอ
+        if (box.Step != BoxStep.Labeled)
+            return false;
+
+        return true;
+    }
+
+
+    void TryInteract(InteractionType interactionType)
+    {
+        if (!TryGetInteractRay(out Ray ray)) return;
+
+        if (!Physics.Raycast(ray, out var hit, interactDistance, interactMask,
+            QueryTriggerInteraction.Ignore))
+            return;
+
+        var interactable =
+            hit.collider.GetComponent<IInteractable>() ??
+            hit.collider.GetComponentInParent<IInteractable>();
+
+        interactable?.Interact(this, interactionType);
+
+    }
+
+    bool TryGetInteractRay(out Ray ray)
+    {
+        ray = default;
+
+        switch (interactRayMode)
+        {
+            case InteractRayMode.Camera:
+                if (!currentCamera) return false;
+                ray = new Ray(
+                    currentCamera.transform.position,
+                    currentCamera.transform.forward
+                );
+                return true;
+
+            case InteractRayMode.Player:
+                if (!playerRayOrigin) return false;
+                ray = new Ray(
+                    playerRayOrigin.position,
+                    playerRayOrigin.forward
+                );
+                return true;
+        }
+
+        return false;
     }
     void TryPickup()
     {
-        if (!currentCamera || !holdPoint) return;
+        if (!TryGetInteractRay(out Ray ray) || !holdPoint) return;
 
-        // ❗ อย่า raycast โดนของที่ถือ
         int mask = ~LayerMask.GetMask(holdLayerName);
 
-        Ray ray = new(currentCamera.transform.position, currentCamera.transform.forward);
-        if (!Physics.Raycast(ray, out var hit, pickupDistance, mask, QueryTriggerInteraction.Ignore))
+        if (!Physics.Raycast(ray, out var hit, pickupDistance, mask,
+            QueryTriggerInteraction.Ignore))
             return;
 
         if (!hit.transform.CompareTag(pickableTag))
             return;
 
-        var rb = hit.rigidbody ? hit.rigidbody : hit.transform.GetComponent<Rigidbody>();
+        var rb = hit.rigidbody ?? hit.transform.GetComponent<Rigidbody>();
         if (!rb) return;
 
         Grab(rb);
     }
+
     void Grab(Rigidbody rb)
     {
         HeldObject = rb.gameObject;

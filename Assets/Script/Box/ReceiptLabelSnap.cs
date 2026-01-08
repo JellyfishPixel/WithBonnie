@@ -63,40 +63,62 @@ public class ReceiptLabelSnap : MonoBehaviour, IInteractable
             transform.position = holdPoint.position;
             transform.rotation = Quaternion.LookRotation(cam.transform.forward, Vector3.up);
         }
-
-        // กดคลิกซ้ายเพื่อวางจริง เมื่ออยู่ใน preview ที่ valid
-        if (Input.GetMouseButtonDown(0) && snappingPreview && previewArea != null)
-        {
-            FinalizePlace(previewArea, previewWorld, previewRot);
-
-            // แจ้ง BoxCore ว่ามีลาเบลแล้ว (ถ้าคุณมี method นี้)
-           currentBox.NotifyLabelPasted();
-
-            isHeld = false;
-            holder = null;
-        }
     }
 
     // =====================================================================
     // IInteractable: กด E ที่ลาเบล เพื่อ "เริ่มถือ"
     // =====================================================================
-    public void Interact(PlayerInteractionSystem interactor)
+    public void Interact(
+      PlayerInteractionSystem interactor,
+      PlayerInteractionSystem.InteractionType type
+  )
     {
-        if (isHeld)
+        // ใช้ Mouse0 เท่านั้น
+        if (type != PlayerInteractionSystem.InteractionType.Primary)
+            return;
+        var currentBox = BoxCore.Current;
+        // ===== กรณีกำลังแปะ (Finalize) =====
+        if (snappingPreview && previewArea != null)
         {
-            // ถ้าต้องการให้กด E อีกครั้งเป็นการยกเลิกถือ → ใส่ CancelHold(); ตรงนี้ได้
+            FinalizePlace(previewArea, previewWorld, previewRot);
+
+            currentBox.NotifyLabelPasted();
+
+            isHeld = false;
+            holder = null;
             return;
         }
 
-        // ต้องมี BoxCore ปัจจุบัน
-        var currentBox = BoxCore.Current;
+        // ===== กรณีเริ่มถือ =====
+        if (isHeld)
+        {
+            // ✅ เมาส์อยู่บน SnapArea → Snap
+            if (snappingPreview && previewArea != null)
+            {
+                FinalizePlace(previewArea, previewWorld, previewRot);
+
+                
+                if (currentBox)
+                    currentBox.NotifyLabelPasted();
+
+                EndHold();
+            }
+            // ❌ ไม่อยู่บน Snap → ยกเลิกถือ
+            else
+            {
+                CancelHold();
+            }
+
+            return;
+        }
+        TryBeginHold(interactor);
+
         if (!currentBox)
         {
             Debug.Log("ยังไม่มีกล่องปัจจุบันสำหรับแปะใบเสร็จ");
             return;
         }
 
-        // ต้องปิดฝากล่อง + เทปเสร็จ (คุณจะผ่อนเงื่อนไขทีหลังได้)
         var tape = currentBox.GetComponentInChildren<TapeDragScaler>();
         if (!tape || !tape.isTapeDone)
         {
@@ -104,14 +126,12 @@ public class ReceiptLabelSnap : MonoBehaviour, IInteractable
             return;
         }
 
-        // เช็คแท็กเพื่อให้แน่ใจว่าเป็นใบเสร็จจริง ๆ
         if (!string.IsNullOrEmpty(pickupTag) && !CompareTag(pickupTag))
         {
-            Debug.Log("object นี้ไม่ได้เป็นแท็ก Reciept");
+            Debug.Log("object นี้ไม่ได้เป็นแท็ก Receipt");
             return;
         }
 
-        // ถ้าแปะอยู่แล้ว (มี SnapArea เป็น parent) ไม่ให้หยิบออก
         if (transform.GetComponentInParent<SnapArea>() != null)
         {
             Debug.Log("ใบเสร็จแปะอยู่แล้ว หยิบออกไม่ได้");
@@ -120,12 +140,14 @@ public class ReceiptLabelSnap : MonoBehaviour, IInteractable
 
         // ตั้งค่าจาก PlayerInteractionSystem
         holder = interactor;
-        cam = interactor.playerCamera ?? Camera.main;
+        cam = interactor.GetCurrentCamera();
         holdPoint = interactor.holdPoint;
         playerCollider = interactor.GetComponent<Collider>();
 
         BeginHold();
     }
+
+
 
     void BeginHold()
     {
@@ -147,30 +169,61 @@ public class ReceiptLabelSnap : MonoBehaviour, IInteractable
                 Physics.IgnoreCollision(heldCols[i], playerCollider, true);
         }
     }
+    void TryBeginHold(PlayerInteractionSystem interactor)
+    {
+        var currentBox = BoxCore.Current;
+        if (!currentBox) return;
+
+        var tape = currentBox.GetComponentInChildren<TapeDragScaler>();
+        if (!tape || !tape.isTapeDone) return;
+
+        if (transform.GetComponentInParent<SnapArea>() != null) return;
+
+        holder = interactor;
+        cam = interactor.GetCurrentCamera();
+        holdPoint = interactor.holdPoint;
+        playerCollider = interactor.GetComponent<Collider>();
+
+        BeginHold();
+    }
+    void EndHold()
+    {
+        isHeld = false;
+        holder = null;
+    }
 
     void CancelHold()
     {
         if (!isHeld) return;
 
+        // ===== คืน collision กับ player =====
         if (playerCollider)
         {
             heldCols.Clear();
             GetComponentsInChildren(true, heldCols);
+
             for (int i = 0; i < heldCols.Count; i++)
-                Physics.IgnoreCollision(heldCols[i], playerCollider, false);
+            {
+                if (heldCols[i])
+                    Physics.IgnoreCollision(heldCols[i], playerCollider, false);
+            }
         }
 
+        // ===== reset state =====
         isHeld = false;
         holder = null;
         snappingPreview = false;
         previewArea = null;
 
+        // ===== ปิด grid preview =====
         if (lastPreviewArea)
         {
             lastPreviewArea.ShowGrid(false);
             lastPreviewArea = null;
         }
     }
+
+
 
     // =====================================================================
     // SNAP PREVIEW LOGIC (ย้ายมาจากสคริปต์เก่าแทบทั้งดุ้น)

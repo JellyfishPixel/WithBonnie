@@ -7,8 +7,12 @@ public class TapeDispenser : MonoBehaviour, IInteractable
     [Header("Tape Config")]
     public TapeColor tapeColor = TapeColor.Red;
 
-    public void Interact(PlayerInteractionSystem interactor)
+    public void Interact(PlayerInteractionSystem interactor,
+                         PlayerInteractionSystem.InteractionType type)
     {
+        // Mouse0 เท่านั้น
+        if (type != PlayerInteractionSystem.InteractionType.Primary)
+            return;
         var eco = EconomyManager.Instance;
         if (eco != null && !eco.HasTapeUse(tapeColor))
         {

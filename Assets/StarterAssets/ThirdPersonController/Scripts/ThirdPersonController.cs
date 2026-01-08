@@ -120,7 +120,8 @@ namespace StarterAssets
         private const float _threshold = 0.01f;
 
         private bool _hasAnimator;
-
+        private bool _movementLocked = false;
+        public bool IsMovementLocked => _movementLocked;
 
         private bool IsCurrentDeviceMouse
         {
@@ -167,7 +168,13 @@ namespace StarterAssets
         private void Update()
         {
             _hasAnimator = TryGetComponent(out _animator);
-
+            if (_movementLocked)
+            {
+                // รีเซ็ตความเร็วไว้ กันลื่น/ไหล
+                _speed = 0f;
+                _verticalVelocity = 0f;
+                return;
+            }
             JumpAndGravity();
             GroundedCheck();
             Move();
@@ -175,7 +182,35 @@ namespace StarterAssets
 
         private void LateUpdate()
         {
+            if (_movementLocked) return;
+
             CameraRotation();
+        }
+
+        public void LockMovement()
+        {
+            _movementLocked = true;
+
+            // เคลียร์ input ตอนนี้ทิ้ง
+            if (_input != null)
+            {
+                _input.move = Vector2.zero;
+                _input.look = Vector2.zero;
+                _input.jump = false;
+                _input.sprint = false;
+            }
+
+            // หยุดความเร็วแนวดิ่ง กันกระตุก
+            _speed = 0f;
+            _verticalVelocity = 0f;
+
+            Debug.Log("[FPC] LockMovement");
+        }
+
+        public void UnlockMovement()
+        {
+            _movementLocked = false;
+            Debug.Log("[FPC] UnlockMovement");
         }
         private void OnTriggerEnter(Collider other)
         {

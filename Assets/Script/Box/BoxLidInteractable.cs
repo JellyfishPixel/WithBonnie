@@ -13,14 +13,14 @@ public class BoxLidInteractable : MonoBehaviour, IInteractable
         if (!box) box = GetComponentInParent<BoxCore>();
     }
 
-    public void Interact(PlayerInteractionSystem interactor)
+    public void Interact(PlayerInteractionSystem interactor, PlayerInteractionSystem.InteractionType type)
     {
+        if (type != PlayerInteractionSystem.InteractionType.Primary)
+            return;
+
         if (box == null || lid == null) return;
-
-        // ???????????: ????????? + ???????????????
         if (!box.CanCloseLid()) return;
-
-        if (lid.isClosed) return;   // ????????????????????
+        if (lid.isClosed) return;  
         lid.CloseLid();
     }
 }
