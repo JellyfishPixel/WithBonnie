@@ -39,6 +39,17 @@ public class BubbleSpawnButton : MonoBehaviour, IInteractable
         if (!eco.TryConsumeBubble(bubbleType))
             return;
 
+<<<<<<< HEAD
+        var shopUI = FindFirstObjectByType<BoxShopUI>();
+        if (shopUI != null)
+            shopUI.RefreshUI();
+
+
+
+
+
+=======
+>>>>>>> origin/main
         // ✅ เซ็ตประเภทบับเบิลให้กล่อง (ใช้ในเรื่องดาเมจ / ลาย / ฯลฯ)
         currentBox.ApplyBubbleType(bubbleType);
         currentBox.hasIceBubble = (bubbleType == BubbleType.Ice);

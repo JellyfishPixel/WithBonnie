@@ -167,8 +167,19 @@ public class BoxShopUI : MonoBehaviour
         qtyBubbleBasic = qtyBubbleStrong = qtyBubbleIce = 0;
         qtyTapeRed = qtyTapeBlue = qtyTapeGreen = 0;
     }
+    void OnEnable()
+    {
+        if (EconomyManager.Instance != null)
+            EconomyManager.Instance.OnStockChanged += RefreshUI;
+    }
 
-    void RefreshUI()
+    void OnDisable()
+    {
+        if (EconomyManager.Instance != null)
+            EconomyManager.Instance.OnStockChanged -= RefreshUI;
+    }
+
+    public void RefreshUI()
     {
         if (qtySText) qtySText.text = qtyS.ToString();
         if (qtyMText) qtyMText.text = qtyM.ToString();

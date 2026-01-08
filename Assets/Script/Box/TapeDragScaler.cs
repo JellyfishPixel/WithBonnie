@@ -178,6 +178,10 @@ public class TapeDragScaler : MonoBehaviour
                     {
                         Debug.LogWarning("[TapeDragScaler] Tape finished but no stock left in eco.");
                     }
+
+                    var shopUI = FindFirstObjectByType<BoxShopUI>();
+                    if (shopUI != null)
+                        shopUI.RefreshUI();
                 }
 
                 if (BoxCore.Current != null)

@@ -49,7 +49,7 @@ public class BoxSpawner : MonoBehaviour, IInteractable
         if (!prefab)
         {
             Debug.LogWarning("[BoxSpawner] Prefab ยังไม่ได้เซ็ต");
-            eco.AddBox(sizeForThisSpawner, 1); // คืนสต็อกให้กันพลาด
+            eco.AddBox(sizeForThisSpawner, 1);
             return;
         }
 

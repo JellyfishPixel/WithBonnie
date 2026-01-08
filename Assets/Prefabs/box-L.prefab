@@ -105,6 +105,7 @@ MonoBehaviour:
   pivotAtCenter: 1
   selectedDispenser: {fileID: 0}
   isTapeDone: 0
+  interactionSystem: {fileID: 0}
   cube: {fileID: 5320570350790152291}
 --- !u!1 &1728392966829902260
 GameObject:
@@ -396,7 +397,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -6478536213147159724, guid: 930454b265931074db5d91a5e9d9a0b8, type: 3}
+  - {fileID: 2100000, guid: c309f2baf7da05f479e61c7295c0b12b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -607,7 +608,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -6478536213147159724, guid: 930454b265931074db5d91a5e9d9a0b8, type: 3}
+  - {fileID: 2100000, guid: c309f2baf7da05f479e61c7295c0b12b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1034,7 +1035,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: -6478536213147159724, guid: 930454b265931074db5d91a5e9d9a0b8, type: 3}
+  - {fileID: 2100000, guid: c309f2baf7da05f479e61c7295c0b12b, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -1467,6 +1468,7 @@ MonoBehaviour:
   extraDeadlineDaysWithIce: 1
   currentItemData: {fileID: 0}
   currentItemInstance: {fileID: 0}
+  deliveredSuccessfully: 0
 --- !u!4 &3093471409491763370 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: d97844c237c6db4448dbab25245de489, type: 3}
