@@ -54,7 +54,7 @@ public class SceneTransitionManager : MonoBehaviour
         if (isTransitioning) yield break;
         isTransitioning = true;
 
-        // 🔒 ล็อกตั้งแต่เริ่ม
+
         CameraModeManager.Instance.LockMode(true);
 
         pendingSpawnId = spawnId;

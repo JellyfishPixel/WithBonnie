@@ -14,8 +14,9 @@ public class MinimapController : MonoBehaviour
     public Transform worldMin;           // มุมล่างซ้ายของโลก
     public Transform worldMax;           // มุมขวาบนของโลก
 
-    [Header("Refs")]
-    public FirstPersonController player;             // ตัว Player ในโลก
+
+    [Header("Player")]
+    public Transform playerTransform;
     public RectTransform deliveryIconPrefab;   // Prefab icon จุดส่งของ
 
     // จุดส่งของในโลก กับ icon บนแมพ
@@ -27,13 +28,13 @@ public class MinimapController : MonoBehaviour
 
     void Start()
     {
+        
         if (!mapRect) mapRect = GetComponent<RectTransform>();
         if (playerIcon && playerIcon.parent != mapRect)
             playerIcon.SetParent(mapRect, false);
 
         // reset position ตอนเริ่ม
         playerIcon.anchoredPosition = Vector2.zero;
-        player = FindFirstObjectByType<FirstPersonController>();
         IsColse = true;
         ui.SetActive(false);   // เริ่มต้นเป็นปิด minimap
     }
@@ -48,13 +49,13 @@ public class MinimapController : MonoBehaviour
         }
 
 
-        if (!player || !playerIcon) return;
+        if (!playerTransform || !playerIcon) return;
 
         // อัปเดตตำแหน่งผู้เล่น
-        UpdateIconPosition(player.transform.position, playerIcon);
+        UpdateIconPosition(playerTransform.position, playerIcon);
 
         // หมุนหัวลูกศรตาม player (optional)
-        float yaw = player.transform.eulerAngles.y;
+        float yaw = playerTransform.eulerAngles.y;
         playerIcon.localEulerAngles = new Vector3(0, 0, -yaw);
 
         // 🔹 อัปเดตตำแหน่ง icon ของจุดปลายทางทุกอัน
@@ -120,6 +121,25 @@ public class MinimapController : MonoBehaviour
         icon.anchoredPosition = localPos;
     }
 
+    public void RebindWorldBoundsFromScene()
+    {
+        var bounds = FindFirstObjectByType<MinimapWorldBounds>();
+
+        if (bounds == null)
+        {
+            Debug.LogWarning("[Minimap] No MinimapWorldBounds found in this scene");
+            worldMin = null;
+            worldMax = null;
+            return;
+        }
+
+        worldMin = bounds.worldMin;
+        worldMax = bounds.worldMax;
+
+        Debug.Log($"[Minimap] WorldBounds rebound: " +
+                  $"min={(worldMin ? worldMin.name : "NULL")} " +
+                  $"max={(worldMax ? worldMax.name : "NULL")}");
+    }
 
     public RectTransform RegisterDeliveryTarget(Transform targetWorldTransform)
     {
@@ -159,6 +179,27 @@ public class MinimapController : MonoBehaviour
                 break;
             }
         }
+    }
+    public Transform GetNearestDeliveryTarget()
+    {
+        if (!playerTransform || deliveryTargets.Count == 0) return null;
+
+        Transform nearest = null;
+        float minDist = float.MaxValue;
+
+        foreach (var t in deliveryTargets)
+        {
+            if (!t) continue;
+
+            float d = Vector3.Distance(playerTransform.position, t.position);
+            if (d < minDist)
+            {
+                minDist = d;
+                nearest = t;
+            }
+        }
+
+        return nearest;
     }
 
 }

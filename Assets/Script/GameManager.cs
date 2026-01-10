@@ -11,6 +11,7 @@ public class GameManager : MonoBehaviour
     public int currentDay = 1;
     public int currentHour = 8;   // เริ่ม 08.00
     public int currentMinute = 0;
+    public DirectionArrowUI directionArrowUI;
 
     [Tooltip("เวลาจริง (วินาที) ต่อ 1 ชั่วโมงในเกม")]
     public float realSecondsPerGameHour = 30f;
@@ -54,6 +55,45 @@ public class GameManager : MonoBehaviour
 
     // กล่องที่อยู่ใน "รอบนี้" (สูงสุด 3)
     public List<DeliveryRecord> activeBoxes = new();
+    [ContextMenu("DEV/Register Test Delivery")]
+    public void DevRegisterTestDelivery()
+    {
+        // 🔧 เปลี่ยน ID ตรงนี้ได้ตามที่อยากเทส
+        string testDestinationId = "Home1";
+
+        DevRegisterTestDeliveryById(testDestinationId);
+    }
+    public void DevRegisterTestDeliveryById(string destinationId)
+    {
+        if (string.IsNullOrWhiteSpace(destinationId))
+        {
+            Debug.LogWarning("[DEV] destinationId is empty");
+            return;
+        }
+
+        // หา world target จาก registry
+        Transform target = ResolveDestinationTransform(destinationId);
+
+        if (target == null)
+        {
+            Debug.LogWarning($"[DEV] Destination '{destinationId}' not found in this scene");
+            return;
+        }
+
+        Debug.Log($"[DEV] Register TEST delivery to '{destinationId}'");
+
+        // ===== Minimap =====
+        if (minimap != null)
+        {
+            minimap.RegisterDeliveryTarget(target);
+        }
+
+        // ===== Direction Arrow =====
+        if (directionArrowUI != null)
+        {
+            directionArrowUI.SetTarget(target);
+        }
+    }
 
     void Awake()
     {
@@ -70,6 +110,7 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         minimap = FindFirstObjectByType<MinimapController>();
+        destinationRegistry = FindFirstObjectByType<DestinationRegistry>();
         UpdateClockUI();
         SyncDayToEconomy();
         SyncMoneyFromEconomy();
@@ -185,7 +226,11 @@ public class GameManager : MonoBehaviour
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
         RelinkSceneSystemsAndRebuildMinimap();
+
+        if (minimap != null)
+            minimap.RebindWorldBoundsFromScene();
     }
+
     DestinationRegistry GetDestinationRegistry()
     {
         if (destinationRegistry == null)
@@ -252,6 +297,10 @@ public class GameManager : MonoBehaviour
             minimap.UnregisterIcon(rec.minimapIcon);
             rec.minimapIcon = null;
         }
+        if (directionArrowUI != null && rec.worldTarget != null)
+        {
+            directionArrowUI.RemoveTarget(rec.worldTarget);
+        }
 
         activeBoxes.Remove(rec);
     }
@@ -266,7 +315,6 @@ public class GameManager : MonoBehaviour
 
             rec.minimapIcon = null;
 
-            // ใช้ helper ตัวใหม่
             rec.worldTarget = ResolveDestinationTransform(rec.destinationId);
 
             Debug.Log($"[GM] Relink: destId='{rec.destinationId}' -> worldTarget={(rec.worldTarget ? rec.worldTarget.name : "NULL")}");
@@ -274,13 +322,26 @@ public class GameManager : MonoBehaviour
             if (mini != null && rec.worldTarget != null)
             {
                 rec.minimapIcon = mini.RegisterDeliveryTarget(rec.worldTarget);
-                Debug.Log($"[GM] Relink: rebuild icon => {(rec.minimapIcon ? rec.minimapIcon.name : "NULL")}");
+            }
+        }
+
+        if (directionArrowUI != null)
+        {
+            directionArrowUI.ClearAll();
+
+            foreach (var r in activeBoxes)
+            {
+                if (r != null && r.worldTarget != null)
+                {
+                    directionArrowUI.SetTarget(r.worldTarget);
+                }
             }
         }
 
 
         minimap = mini;
     }
+
 
     public void RegisterNewDelivery(BoxCore box, DeliveryItemInstance item)
     {
@@ -322,8 +383,13 @@ public class GameManager : MonoBehaviour
         {
             Debug.LogWarning("[GM]  (RegisterNewDelivery) mini=null หรือ worldTarget=null → ยังไม่สร้าง icon แรก");
         }
-
         activeBoxes.Add(record);
+
+        if (directionArrowUI != null && record.worldTarget != null)
+        {
+            directionArrowUI.SetTarget(record.worldTarget);
+        }
+
     }
 
     public void CompleteDelivery(BoxCore box)
@@ -375,6 +441,12 @@ public class GameManager : MonoBehaviour
             minimap.UnregisterIcon(rec.minimapIcon);
             rec.minimapIcon = null;
         }
+        // อัปเดตลูกศรหลังส่งสำเร็จ
+        if (directionArrowUI != null && rec.worldTarget != null)
+        {
+            directionArrowUI.RemoveTarget(rec.worldTarget);
+        }
+
 
         activeBoxes.Remove(rec);
     }
