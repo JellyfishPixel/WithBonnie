@@ -4934,7 +4934,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   spawnInside: {fileID: 1770817932}
   spawnOutside: {fileID: 1320324293}
-  playerIsInside: 0
+  playerIsInside: 1
 --- !u!65 &332292229
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -9081,7 +9081,7 @@ MonoBehaviour:
   targetSceneName: Map
   targetSpawnId: FromMap
   playerTag: Player
-  targetCameraMode: 0
+  targetCameraMode: 1
 --- !u!1 &674756505
 GameObject:
   m_ObjectHideFlags: 0
@@ -14442,7 +14442,7 @@ Transform:
   m_GameObject: {fileID: 1084785606}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -17079,8 +17079,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpawnPoint
   spawnId: Shop_Outside
   overridePlayerRotation: 1
-  playerEuler: {x: 0, y: 180, z: 0}
-  overrideCameraRotation: 0
+  playerEuler: {x: 0, y: 0, z: 0}
+  overrideCameraRotation: 1
   cameraLook: {x: 0, y: 0}
 --- !u!1 &1337809866
 GameObject:
@@ -19743,31 +19743,31 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 8944336655422409503, guid: f6d148d888ffbf54b9afe9936dfaec1f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0.31500006
+      value: 1.51
       objectReference: {fileID: 0}
     - target: {fileID: 8944336655422409503, guid: f6d148d888ffbf54b9afe9936dfaec1f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: -3.4120002
+      value: -3.24
       objectReference: {fileID: 0}
     - target: {fileID: 8944336655422409503, guid: f6d148d888ffbf54b9afe9936dfaec1f, type: 3}
       propertyPath: m_LocalRotation.w
-      value: 0.9974812
+      value: 0.99411327
       objectReference: {fileID: 0}
     - target: {fileID: 8944336655422409503, guid: f6d148d888ffbf54b9afe9936dfaec1f, type: 3}
       propertyPath: m_LocalRotation.x
-      value: 0.070931576
+      value: 0.10834636
       objectReference: {fileID: 0}
     - target: {fileID: 8944336655422409503, guid: f6d148d888ffbf54b9afe9936dfaec1f, type: 3}
       propertyPath: m_LocalRotation.y
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8944336655422409503, guid: f6d148d888ffbf54b9afe9936dfaec1f, type: 3}
       propertyPath: m_LocalRotation.z
-      value: -0
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8944336655422409503, guid: f6d148d888ffbf54b9afe9936dfaec1f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.x
-      value: 8.135
+      value: 12.44
       objectReference: {fileID: 0}
     - target: {fileID: 8944336655422409503, guid: f6d148d888ffbf54b9afe9936dfaec1f, type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
@@ -20772,7 +20772,7 @@ Transform:
   m_GameObject: {fileID: 1725046381}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.2, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -22865,12 +22865,14 @@ MonoBehaviour:
   firstPersonCamera: {fileID: 1725046386}
   thirdPersonCamera: {fileID: 19881417}
   firstPersonCameraRoot: {fileID: 1186467925}
+  thirdPersonCameraRoot: {fileID: 1084785607}
   firstPersonController: {fileID: 1840589224}
   thirdPersonController: {fileID: 1840589230}
   starterInput: {fileID: 1840589243}
   characterVisual: {fileID: 2043902701}
   player: {fileID: 1840589187}
   InteractPoint: {fileID: 1776941506}
+  startMode: 0
 --- !u!114 &1840589243 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5420857361349278248, guid: c5efc39a8aaf6e64ea40e9ad573e9b47, type: 3}

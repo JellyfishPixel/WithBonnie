@@ -14,6 +14,10 @@ public class SceneTransitionManager : MonoBehaviour
     public bool isTransitioning;
     public bool IsInsideShop { get; private set; }
 
+    void Start()
+    {
+        SetShopState(IsInsideShop);
+    }
 
     void Awake()
     {
@@ -105,7 +109,6 @@ public class SceneTransitionManager : MonoBehaviour
         if (FadeManager.Instance != null)
             yield return FadeManager.Instance.FadeIn();
 
-        // 🔓 ปลดล็อกตรงนี้
         CameraModeManager.Instance.LockMode(false);
         isTransitioning = false;
 

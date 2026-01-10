@@ -16,7 +16,7 @@ public class CameraModeManager : MonoBehaviour
     public Camera firstPersonCamera;
     public Camera thirdPersonCamera;
     public Transform firstPersonCameraRoot;
-
+    public Transform thirdPersonCameraRoot;
     [Header("Controllers")]
     public FirstPersonController firstPersonController;
     public ThirdPersonController thirdPersonController;
@@ -27,8 +27,13 @@ public class CameraModeManager : MonoBehaviour
     public GameObject player;
     public GameObject InteractPoint;
 
+    [Header("Startup Mode")]
+    [SerializeField] private CameraMode startMode = CameraMode.FirstPerson;
+
+
     public CameraMode CurrentMode { get; private set; }
     bool lockMode;
+
 
     public void LockMode(bool value)
     {
@@ -43,6 +48,18 @@ public class CameraModeManager : MonoBehaviour
             return;
         }
         Instance = this;
+
+        // ❌ อย่าตั้ง CurrentMode ที่นี่
+    }
+
+    void Start()
+    {
+        // 🔥 ตั้งค่า dummy ให้ต่างจาก startMode
+        CurrentMode = (startMode == CameraMode.FirstPerson)
+            ? CameraMode.ThirdPerson
+            : CameraMode.FirstPerson;
+
+        SetMode(startMode);
     }
 
     public void SetMode(CameraMode mode)
@@ -61,11 +78,8 @@ public class CameraModeManager : MonoBehaviour
 
         // ===== Visual =====
         characterVisual.SetActive(!isFP);
-
-        if (InteractPoint != null)
-        {
-            InteractPoint.SetActive(isFP);
-        }
+        InteractPoint.SetActive(isFP);
+       
 
         // ===== เปิด Controller ที่ถูกต้อง =====
         if (isFP)
@@ -76,7 +90,10 @@ public class CameraModeManager : MonoBehaviour
         }
         else
         {
+            CleanupAfterFirstPerson();
+            ResetTPCameraRootAndState();
             thirdPersonController.enabled = true;
+         
         }
 
         CurrentMode = mode;
@@ -102,14 +119,26 @@ public class CameraModeManager : MonoBehaviour
         firstPersonCameraRoot.localRotation = Quaternion.identity;
     }
 
-    void ResetTPCamera()
+    void ResetTPCameraRootAndState()
     {
-        // รีเซ็ต look state ภายใน
-        thirdPersonController.SetLookAngles(0f, 0f);
+        if (!thirdPersonCameraRoot || !player) return;
 
-        // รีเซ็ตการหมุนของ player ให้ตรง
-        player.transform.rotation =
-            Quaternion.Euler(0f, player.transform.eulerAngles.y, 0f);
+    
+        thirdPersonController.enabled = false;
+
+        if (thirdPersonCameraRoot.parent != player.transform)
+            thirdPersonCameraRoot.SetParent(player.transform, false);
+
+      
+        thirdPersonCameraRoot.localPosition = Vector3.zero;
+
+  
+        float playerYaw = player.transform.eulerAngles.y;
+        thirdPersonCameraRoot.localRotation =
+            Quaternion.Euler(0f, playerYaw, 0f);
+
+  
+        thirdPersonController.SetLookAngles(0f, playerYaw);
     }
 
 
@@ -144,8 +173,9 @@ public class CameraModeManager : MonoBehaviour
         else
         {
             CleanupAfterFirstPerson();
-            ResetTPCamera();
+            ResetTPCameraRootAndState();
             thirdPersonController.enabled = true;
+          
         }
 
     }
@@ -177,6 +207,7 @@ public class CameraModeManager : MonoBehaviour
     }
 
 
+
     void SetCameraLook(Vector2 look)
     {
         if (CurrentMode == CameraMode.FirstPerson)
@@ -184,13 +215,6 @@ public class CameraModeManager : MonoBehaviour
             firstPersonController.SetLookAngles(
                 look.y, // pitch
                 look.x  // yaw
-            );
-        }
-        else
-        {
-            thirdPersonController.SetLookAngles(
-                0,
-                0
             );
         }
     }

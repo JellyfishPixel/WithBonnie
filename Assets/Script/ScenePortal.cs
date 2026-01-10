@@ -25,7 +25,7 @@ public class ScenePortal : MonoBehaviour
             SceneTransitionManager.Instance.WarpToScene(
                 targetSceneName,
                 targetSpawnId,
-                targetCameraMode   // 👈 สำคัญ
+                targetCameraMode   
             );
         }
         else
