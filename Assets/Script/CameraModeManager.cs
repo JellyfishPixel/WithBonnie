@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using StarterAssets;
 using System.Collections;
+using static PlayerInteractionSystem;
 
 public enum CameraMode
 {
@@ -29,6 +30,8 @@ public class CameraModeManager : MonoBehaviour
 
     [Header("Startup Mode")]
     [SerializeField] private CameraMode startMode = CameraMode.FirstPerson;
+    [Header("Interaction")]
+    public PlayerInteractionSystem interactionSystem;
 
 
     public CameraMode CurrentMode { get; private set; }
@@ -79,7 +82,19 @@ public class CameraModeManager : MonoBehaviour
         // ===== Visual =====
         characterVisual.SetActive(!isFP);
         InteractPoint.SetActive(isFP);
-       
+        if (interactionSystem)
+        {
+            if (isFP)
+            {
+                interactionSystem.SetCurrentCamera(firstPersonCamera);
+                interactionSystem.interactRayMode = InteractRayMode.Camera;
+            }
+            else
+            {
+                interactionSystem.SetCurrentCamera(thirdPersonCamera);
+                interactionSystem.interactRayMode = InteractRayMode.Player;
+            }
+        }
 
         // ===== เปิด Controller ที่ถูกต้อง =====
         if (isFP)

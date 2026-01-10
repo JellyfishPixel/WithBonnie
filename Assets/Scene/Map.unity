@@ -636,6 +636,7 @@ MonoBehaviour:
   targetSceneName: Main
   targetSpawnId: FromMain
   playerTag: Player
+  targetCameraMode: 0
 --- !u!65 &782995980
 BoxCollider:
   m_ObjectHideFlags: 0
@@ -651,7 +652,7 @@ BoxCollider:
     serializedVersion: 2
     m_Bits: 0
   m_LayerOverridePriority: 0
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
@@ -1111,6 +1112,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SpawnPoint
   spawnId: FromMap
+  overridePlayerRotation: 1
+  playerEuler: {x: 0, y: 0, z: 0}
+  overrideCameraRotation: 1
+  cameraLook: {x: 0, y: 0}
 --- !u!4 &1489169273
 Transform:
   m_ObjectHideFlags: 0

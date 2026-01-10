@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 
 
-public class ScenePortal : MonoBehaviour
+public class ScenePortal : MonoBehaviour , IInteractable
 {
     [Header("Target Scene")]
     [Tooltip("ชื่อฉากปลายทาง (เช่น \"Main\" หรือ \"Map\")")]
@@ -15,9 +15,12 @@ public class ScenePortal : MonoBehaviour
     public string playerTag = "Player";
     public CameraMode targetCameraMode;
 
-    void OnTriggerEnter(Collider other)
+    public void Interact(PlayerInteractionSystem interactor,
+                         PlayerInteractionSystem.InteractionType type)
     {
-        if (!other.CompareTag(playerTag)) return;
+        // E เท่านั้น
+        if (type != PlayerInteractionSystem.InteractionType.Secondary)
+            return;
 
         if (SceneTransitionManager.Instance != null)
         {
