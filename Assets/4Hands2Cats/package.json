@@ -1,0 +1,14 @@
+{
+    "name": "com.4hands2cats.debugtoolkit",
+    "displayName": "Debug Toolkit",
+    "version": "1.0.0",
+    "unity": "6000.0.24",
+    "description": "A powerful debugging toolkit for Unity.",
+    "author": {
+      "name": "4Hands2Cats",
+      "url": "https://4hands2cats.github.io/UnityDebugToolkitDocumentation/#/"
+    },
+    "dependencies": {
+      "com.unity.cinemachine": "3.1.0"
+    }
+  }

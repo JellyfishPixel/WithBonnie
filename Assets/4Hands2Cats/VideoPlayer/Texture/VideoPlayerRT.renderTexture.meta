@@ -1,0 +1,15 @@
+fileFormatVersion: 2
+guid: 366c9e919a8c794419151cb5adcdfae5
+NativeFormatImporter:
+  externalObjects: {}
+  mainObjectFileID: 8400000
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330755
+  packageName: Video Player
+  packageVersion: 1.0
+  assetPath: Assets/4Hands2Cats/VideoPlayer/Texture/VideoPlayerRT.renderTexture
+  uploadId: 799270

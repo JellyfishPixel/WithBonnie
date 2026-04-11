@@ -1,0 +1,376 @@
+﻿using UnityEngine;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
+
+namespace StarterAssets
+{
+	[RequireComponent(typeof(CharacterController))]
+#if ENABLE_INPUT_SYSTEM
+	[RequireComponent(typeof(PlayerInput))]
+#endif
+	public class FirstPersonController : MonoBehaviour
+	{
+		[Header("Player")]
+		[Tooltip("Move speed of the character in m/s")]
+		public float MoveSpeed = 4.0f;
+		[Tooltip("Sprint speed of the character in m/s")]
+		public float SprintSpeed = 6.0f;
+		[Tooltip("Rotation speed of the character")]
+		public float RotationSpeed = 1.0f;
+		[Tooltip("Acceleration and deceleration")]
+		public float SpeedChangeRate = 10.0f;
+
+		[Space(10)]
+		[Tooltip("The height the player can jump")]
+		public float JumpHeight = 1.2f;
+		[Tooltip("The character uses its own gravity value. The engine default is -9.81f")]
+		public float Gravity = -15.0f;
+
+		[Space(10)]
+		[Tooltip("Time required to pass before being able to jump again. Set to 0f to instantly jump again")]
+		public float JumpTimeout = 0.1f;
+		[Tooltip("Time required to pass before entering the fall state. Useful for walking down stairs")]
+		public float FallTimeout = 0.15f;
+
+		[Header("Player Grounded")]
+		[Tooltip("If the character is grounded or not. Not part of the CharacterController built in grounded check")]
+		public bool Grounded = true;
+		[Tooltip("Useful for rough ground")]
+		public float GroundedOffset = -0.14f;
+		[Tooltip("The radius of the grounded check. Should match the radius of the CharacterController")]
+		public float GroundedRadius = 0.5f;
+		[Tooltip("What layers the character uses as ground")]
+		public LayerMask GroundLayers;
+
+		[Header("Cinemachine")]
+		[Tooltip("The follow target set in the Cinemachine Virtual Camera that the camera will follow")]
+		public GameObject CinemachineCameraTarget;
+		[Tooltip("How far in degrees can you move the camera up")]
+		public float TopClamp = 90.0f;
+		[Tooltip("How far in degrees can you move the camera down")]
+		public float BottomClamp = -90.0f;
+        [Header("Footstep SFX")]
+        [SerializeField] public AudioClip[] footstepClips;
+        [SerializeField] public float footstepRate = 0.5f;
+        [SerializeField] public float footstepVolume = 1f;
+
+        float footstepTimer;
+        // cinemachine
+        private float _cinemachineTargetPitch;
+
+		// player
+		private float _speed;
+		private float _rotationVelocity;
+		private float _verticalVelocity;
+		private float _terminalVelocity = 53.0f;
+
+		// timeout deltatime
+		private float _jumpTimeoutDelta;
+		private float _fallTimeoutDelta;
+
+        private bool _movementLocked = false;
+        public bool IsMovementLocked => _movementLocked;
+
+        [Header("Water Slow")]
+        [Tooltip("Tag ของน้ำในฉาก (Collider ที่เป็นน้ำ)")]
+        public string WaterTag = "Water";
+
+        [Tooltip("ค่า multiplier สำหรับความเร็วเมื่ออยู่ในน้ำ (เช่น 0.4 = เหลือ 40%)")]
+        public float WaterSpeedMultiplier = 0.4f;
+
+        // runtime flag
+        private bool _inWater = false;
+
+
+
+#if ENABLE_INPUT_SYSTEM
+        private PlayerInput _playerInput;
+#endif
+		private CharacterController _controller;
+		private StarterAssetsInputs _input;
+		private GameObject _mainCamera;
+
+		private const float _threshold = 0.01f;
+
+
+		private bool IsCurrentDeviceMouse
+		{
+			get
+			{
+				#if ENABLE_INPUT_SYSTEM
+				return _playerInput.currentControlScheme == "KeyboardMouse";
+				#else
+				return false;
+				#endif
+			}
+		}
+
+		private void Awake()
+		{
+			// get a reference to our main camera
+			if (_mainCamera == null)
+			{
+				_mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
+			}
+		}
+
+		private void Start()
+		{
+			_controller = GetComponent<CharacterController>();
+			_input = GetComponent<StarterAssetsInputs>();
+#if ENABLE_INPUT_SYSTEM
+			_playerInput = GetComponent<PlayerInput>();
+#else
+			Debug.LogError( "Starter Assets package is missing dependencies. Please use Tools/Starter Assets/Reinstall Dependencies to fix it");
+#endif
+
+			// reset our timeouts on start
+			_jumpTimeoutDelta = JumpTimeout;
+			_fallTimeoutDelta = FallTimeout;
+		}
+        public void SetLookAngles(float pitch, float yaw)
+        {
+            _cinemachineTargetPitch = pitch;
+            _rotationVelocity = 0f;
+
+            transform.rotation = Quaternion.Euler(0, yaw, 0);
+        }
+
+        private void Update()
+        {
+            if (_movementLocked)
+            {
+                // รีเซ็ตความเร็วไว้ กันลื่น/ไหล
+                _speed = 0f;
+                _verticalVelocity = 0f;
+                return;
+            }
+
+            JumpAndGravity();
+            GroundedCheck();
+            Move();
+            HandleFootstep();
+        }
+
+
+        private void LateUpdate()
+        {
+            if (_movementLocked) return;
+
+            CameraRotation();
+        }
+        void HandleFootstep()
+        {
+            if (!Grounded) return; // ต้องยืนพื้นก่อน
+
+            if (_speed < 0.1f) return; // ไม่เดิน = ไม่มีเสียง
+
+            footstepTimer -= Time.deltaTime;
+
+            if (footstepTimer <= 0f)
+            {
+                if (footstepClips.Length > 0)
+                {
+                    int index = Random.Range(0, footstepClips.Length);
+
+                    AudioManager.Instance.PlaySFX(
+                        footstepClips[index],
+                        transform.position
+                    );
+                }
+
+                footstepTimer = footstepRate;
+            }
+        }
+        private void OnTriggerEnter(Collider other)
+        {
+            if (other.CompareTag(WaterTag))
+            {
+                _inWater = true;
+                Debug.Log("[FPC] Enter water -> slow movement");
+            }
+        }
+
+        private void OnTriggerExit(Collider other)
+        {
+            if (other.CompareTag(WaterTag))
+            {
+                _inWater = false;
+                Debug.Log("[FPC] Exit water -> normal movement");
+            }
+        }
+
+        private void GroundedCheck()
+		{
+			// set sphere position, with offset
+			Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z);
+			Grounded = Physics.CheckSphere(spherePosition, GroundedRadius, GroundLayers, QueryTriggerInteraction.Ignore);
+		}
+
+		private void CameraRotation()
+		{
+			// if there is an input
+			if (_input.look.sqrMagnitude >= _threshold)
+			{
+				//Don't multiply mouse input by Time.deltaTime
+				float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
+				
+				_cinemachineTargetPitch += _input.look.y * RotationSpeed * deltaTimeMultiplier;
+				_rotationVelocity = _input.look.x * RotationSpeed * deltaTimeMultiplier;
+
+				// clamp our pitch rotation
+				_cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
+
+				// Update Cinemachine camera target pitch
+				CinemachineCameraTarget.transform.localRotation = Quaternion.Euler(_cinemachineTargetPitch, 0.0f, 0.0f);
+
+				// rotate the player left and right
+				transform.Rotate(Vector3.up * _rotationVelocity);
+			}
+		}
+
+        private void Move()
+        {
+            if (_controller == null) return;
+            if (!_controller.enabled) return;
+            if (!gameObject.activeInHierarchy) return;
+            // base speed ปกติ (เดิน / วิ่ง)
+            float baseWalkSpeed = MoveSpeed;
+            float baseSprintSpeed = SprintSpeed;
+            bool isSprinting = _input.sprint;
+
+            // 🔹 ถ้าอยู่ในน้ำ → คูณ multiplier ให้ช้าลงทั้งเดินและวิ่ง
+            if (_inWater)
+            {
+                baseWalkSpeed *= WaterSpeedMultiplier;
+                baseSprintSpeed *= WaterSpeedMultiplier;
+                isSprinting = false;
+            }
+
+            float targetSpeed = isSprinting ? baseSprintSpeed : baseWalkSpeed;
+
+            // ถ้าไม่มี input → targetSpeed = 0
+            if (_input.move == Vector2.zero) targetSpeed = 0.0f;
+
+            // ด้านล่างนี้ให้ใช้ของเดิมทั้งหมดได้เลย ↓↓↓
+            float currentHorizontalSpeed = new Vector3(_controller.velocity.x, 0.0f, _controller.velocity.z).magnitude;
+
+            float speedOffset = 0.1f;
+            float inputMagnitude = _input.analogMovement ? _input.move.magnitude : 1f;
+
+            if (currentHorizontalSpeed < targetSpeed - speedOffset || currentHorizontalSpeed > targetSpeed + speedOffset)
+            {
+                _speed = Mathf.Lerp(currentHorizontalSpeed, targetSpeed * inputMagnitude, Time.deltaTime * SpeedChangeRate);
+                _speed = Mathf.Round(_speed * 1000f) / 1000f;
+            }
+            else
+            {
+                _speed = targetSpeed;
+            }
+
+            Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
+
+            if (_input.move != Vector2.zero)
+            {
+                inputDirection = transform.right * _input.move.x + transform.forward * _input.move.y;
+            }
+
+            _controller.Move(inputDirection.normalized * (_speed * Time.deltaTime) +
+                             new Vector3(0.0f, _verticalVelocity, 0.0f) * Time.deltaTime);
+        }
+
+
+        public void LockMovement()
+        {
+            _movementLocked = true;
+
+            // เคลียร์ input ตอนนี้ทิ้ง
+            if (_input != null)
+            {
+                _input.move = Vector2.zero;
+                _input.look = Vector2.zero;
+                _input.jump = false;
+                _input.sprint = false;
+            }
+
+            // หยุดความเร็วแนวดิ่ง กันกระตุก
+            _speed = 0f;
+            _verticalVelocity = 0f;
+
+            Debug.Log("[FPC] LockMovement");
+        }
+
+        public void UnlockMovement()
+        {
+            _movementLocked = false;
+            Debug.Log("[FPC] UnlockMovement");
+        }
+        private void JumpAndGravity()
+		{
+			if (Grounded)
+			{
+				// reset the fall timeout timer
+				_fallTimeoutDelta = FallTimeout;
+
+				// stop our velocity dropping infinitely when grounded
+				if (_verticalVelocity < 0.0f)
+				{
+					_verticalVelocity = -2f;
+				}
+
+				// Jump
+				if (_input.jump && _jumpTimeoutDelta <= 0.0f)
+				{
+					// the square root of H * -2 * G = how much velocity needed to reach desired height
+					_verticalVelocity = Mathf.Sqrt(JumpHeight * -2f * Gravity);
+				}
+
+				// jump timeout
+				if (_jumpTimeoutDelta >= 0.0f)
+				{
+					_jumpTimeoutDelta -= Time.deltaTime;
+				}
+			}
+			else
+			{
+				// reset the jump timeout timer
+				_jumpTimeoutDelta = JumpTimeout;
+
+				// fall timeout
+				if (_fallTimeoutDelta >= 0.0f)
+				{
+					_fallTimeoutDelta -= Time.deltaTime;
+				}
+
+				// if we are not grounded, do not jump
+				_input.jump = false;
+			}
+
+			// apply gravity over time if under terminal (multiply by delta time twice to linearly speed up over time)
+			if (_verticalVelocity < _terminalVelocity)
+			{
+				_verticalVelocity += Gravity * Time.deltaTime;
+			}
+		}
+
+		private static float ClampAngle(float lfAngle, float lfMin, float lfMax)
+		{
+			if (lfAngle < -360f) lfAngle += 360f;
+			if (lfAngle > 360f) lfAngle -= 360f;
+			return Mathf.Clamp(lfAngle, lfMin, lfMax);
+		}
+
+		private void OnDrawGizmosSelected()
+		{
+			Color transparentGreen = new Color(0.0f, 1.0f, 0.0f, 0.35f);
+			Color transparentRed = new Color(1.0f, 0.0f, 0.0f, 0.35f);
+
+			if (Grounded) Gizmos.color = transparentGreen;
+			else Gizmos.color = transparentRed;
+
+			// when selected, draw a gizmo in the position of, and matching radius of, the grounded collider
+			Gizmos.DrawSphere(new Vector3(transform.position.x, transform.position.y - GroundedOffset, transform.position.z), GroundedRadius);
+		}
+	}
+}

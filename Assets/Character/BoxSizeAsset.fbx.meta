@@ -1,0 +1,270 @@
+fileFormatVersion: 2
+guid: 4ac7c04cd861eca45853b31a41c69426
+ModelImporter:
+  serializedVersion: 24200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BoxL
+    second: {fileID: 2100000, guid: 0f917e5b23fc78848b561ff639e99007, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BoxM
+    second: {fileID: 2100000, guid: 9e48d82d3e22fea40b1204fe5a319d96, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BoxS
+    second: {fileID: 2100000, guid: 3cae3964be1c4e74e86450941f5642c1, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: ColdBox
+    second: {fileID: 2100000, guid: 694100621660b91468aa177d7f2afc1e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Material.007
+    second: {fileID: 2100000, guid: 102a7704a5b72b64e8924984c368d0ee, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Rubber ring
+    second: {fileID: 2100000, guid: 7751db06a23f1bb40818c43beb2d64fd, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WaterProof L
+    second: {fileID: 2100000, guid: 85f2f94d5d3aa274ea8124537c9314d8, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: WaterProof M
+    second: {fileID: 2100000, guid: 2a8d9ad0fe548cb4a88a50643fcebcc8, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxCold_BaseColor
+    second: {fileID: 2800000, guid: f67d2cc6157b23d4e854f28dcc0e8fd9, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxCold_Metallic
+    second: {fileID: 2800000, guid: 4d12e00a2efaaca439a39dbcac969fdf, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxCold_Normal
+    second: {fileID: 2800000, guid: 063fe5b3b46b376449d780f43a1c4090, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxCold_Roughness
+    second: {fileID: 2800000, guid: e5b176b2a16eb354db18b404a6255515, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxL_BaseColor
+    second: {fileID: 2800000, guid: b59deb938b1f42e4fabcc257052f56d5, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxL_Metallic
+    second: {fileID: 2800000, guid: ffd1d0af516e246489c0b0abb59c173c, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxL_Normal
+    second: {fileID: 2800000, guid: 3636b623d2e9dd84c933d448b018f668, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxL_Roughness
+    second: {fileID: 2800000, guid: 32e0815f495a2dd40817ac39e01bcc7e, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxM_BaseColor
+    second: {fileID: 2800000, guid: d21fd5ca47f799d4d8ba46b416664d3f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxM_Metallic
+    second: {fileID: 2800000, guid: 6242b3f4abf307240b0f4178e2f1f6d2, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxM_Normal
+    second: {fileID: 2800000, guid: 0f1889a6e5ee1c7469e174a658d34567, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxM_Roughness
+    second: {fileID: 2800000, guid: 6f63793da6e5de445b688051f12e2669, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxSizeS Texture_BaseColor
+    second: {fileID: 2800000, guid: 20b50174116195f449cf98058510e23c, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxSizeS Texture_Metallic
+    second: {fileID: 2800000, guid: 42af8a8a5a9a2ba48b5e475c9f397019, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxSizeS Texture_Normal
+    second: {fileID: 2800000, guid: fd9103a9058ed1340a0305213458cd8c, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxSizeS Texture_Roughness
+    second: {fileID: 2800000, guid: db32ea763497d494683cd4e4b27c859d, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Rubber ring_Base_color
+    second: {fileID: 2800000, guid: 37ae456958eb02c4a981ce2a56016deb, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Rubber ring_Metallic
+    second: {fileID: 2800000, guid: 64c701f59f0b5d14e9c3bb4f724985c0, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Rubber ring_Normal
+    second: {fileID: 2800000, guid: 68b0eef68b800be41aa86f8a4bb49033, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Rubber ring_Roughness
+    second: {fileID: 2800000, guid: 9506bc551cf3f0441b4e9235df2a48aa, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: WaterProof M_Base_color
+    second: {fileID: 2800000, guid: 5dbb036dd0ea80446931f93e6415e7d6, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: WaterProof M_Metallic
+    second: {fileID: 2800000, guid: a4373e4d2d7b79244a3c791dea26030a, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: WaterProof M_Normal
+    second: {fileID: 2800000, guid: e5ee19e3abe443c49a006ad9ed2fe273, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: WaterProof M_Roughness
+    second: {fileID: 2800000, guid: 5866ba2136b1d88489a55e900848fc5c, type: 3}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 0
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    nodeNameCollisionStrategy: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    strictVertexDataChecks: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 2
+  humanoidOversampling: 1
+  avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  importBlendShapeDeformPercent: 1
+  remapMaterialsIfMaterialImportModeIsNone: 0
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

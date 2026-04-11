@@ -1,0 +1,285 @@
+fileFormatVersion: 2
+guid: a69ee6c782fc8a54f92d7bb09c7cd70d
+ModelImporter:
+  serializedVersion: 24200
+  internalIDToNameTable: []
+  externalObjects:
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BoxDoor
+    second: {fileID: 2100000, guid: 6a468a7401cbb2c4fba87c2b5c806de6, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BoxL.001
+    second: {fileID: 2100000, guid: 87b075a1fdd7d4e4a9da2b036259b7be, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BoxM.001
+    second: {fileID: 2100000, guid: 373e7fbb1d0b496458cac414ae204a5a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: BoxS.001
+    second: {fileID: 2100000, guid: c578fb3dde64094499fe288e263d965a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Boxshop
+    second: {fileID: 2100000, guid: 0848c877a5181ac478aae4d20da60068, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: Boxshop2
+    second: {fileID: 2100000, guid: 710ac7c0d8f66ae4a929935c468f4281, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: bOXTABLE
+    second: {fileID: 2100000, guid: 5119400fc277178489b419171f524e53, type: 2}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxDoor_BaseColor
+    second: {fileID: 2800000, guid: ae3988401c81bcd4f80698b9372f8646, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxDoor_Metallic
+    second: {fileID: 2800000, guid: 101438c897317ce4289cdd0d4d5e44e7, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxDoor_Normal
+    second: {fileID: 2800000, guid: 0f49ee259b09b034cbe84269baaf4a88, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxDoor_Roughness
+    second: {fileID: 2800000, guid: c651f8ebc45e4cd448ca0c1ca982ea0e, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxL_BaseColor
+    second: {fileID: 2800000, guid: 6d2695dbf42383646aabc5c7b35a90e6, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxL_Metallic
+    second: {fileID: 2800000, guid: d0955498fc3b100418b14a5ba1899ef1, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxL_Normal
+    second: {fileID: 2800000, guid: ef1742ea15e7e314997ae7675e93cdac, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxL_Roughness
+    second: {fileID: 2800000, guid: 18d08b668b44a644abedc5d7441b3bf3, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxM_BaseColor
+    second: {fileID: 2800000, guid: 743bfd1a96c38914fbf0a33459fc9fc0, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxM_Metallic
+    second: {fileID: 2800000, guid: 09022bfec66e9f443950e10dcb66a02e, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxM_Normal
+    second: {fileID: 2800000, guid: d4dc895871748ac489a5d7735d4a56ef, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxM_Roughness
+    second: {fileID: 2800000, guid: eb10a9564f573ee4f9ee0bce28017817, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxSizeS Texture_BaseColor
+    second: {fileID: 2800000, guid: 2899bb0c509ee68499f6f7efb993ba6a, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxSizeS Texture_Metallic
+    second: {fileID: 2800000, guid: c8910d4caeebdbb4399d8a72fbb48c96, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxSizeS Texture_Normal
+    second: {fileID: 2800000, guid: 9084e51bcbafb1b4ab1a224571df188f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: BoxSizeS Texture_Roughness
+    second: {fileID: 2800000, guid: 9dcd45052a2dc0041b3492e6434ec405, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Ground_BoxShop_BaseColor
+    second: {fileID: 2800000, guid: e08a775c7b87b7545a0b0f5aa433de19, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Ground_BoxShop_Metallic
+    second: {fileID: 2800000, guid: 96cfbbeea31b6454a9234316c60041cb, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Ground_BoxShop_Normal
+    second: {fileID: 2800000, guid: a92e7aacffce32f4d8046b82ee208a86, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Ground_BoxShop_Roughness
+    second: {fileID: 2800000, guid: 1b90ebbc3b5fbc643904c8ef95b35286, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Shop Box_BaseColor
+    second: {fileID: 2800000, guid: d266a9acd6002d7418c705dfadbad44f, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Shop Box_Metallic
+    second: {fileID: 2800000, guid: 1da0707e54e3b244e9869ccb91b73029, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Shop Box_Normal
+    second: {fileID: 2800000, guid: 9b811d835e9b3294cabc2441bcde94e7, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: Shop Box_Roughness
+    second: {fileID: 2800000, guid: 8252780e1332d3b48bb0db958c6fd6ef, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: bOXTABLE_BaseColor
+    second: {fileID: 2800000, guid: e4b6ded77ef1a5c4d8f0047f9e637a69, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: bOXTABLE_Metallic
+    second: {fileID: 2800000, guid: 706893fd499c6fd41bef46d169f888d5, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: bOXTABLE_Normal
+    second: {fileID: 2800000, guid: 634f1f895cbca6b4cae25cb3d125ce17, type: 3}
+  - first:
+      type: UnityEngine:Texture2D
+      assembly: UnityEngine.CoreModule
+      name: bOXTABLE_Roughness
+    second: {fileID: 2800000, guid: 93f659e7115a8af4da13bc0b74fe7758, type: 3}
+  materials:
+    materialImportMode: 2
+    materialName: 0
+    materialSearch: 1
+    materialLocation: 1
+  animations:
+    legacyGenerateAnimations: 4
+    bakeSimulation: 0
+    resampleCurves: 1
+    optimizeGameObjects: 0
+    removeConstantScaleCurves: 0
+    motionNodeName: 
+    animationImportErrors: 
+    animationImportWarnings: 
+    animationRetargetingWarnings: 
+    animationDoRetargetingWarnings: 0
+    importAnimatedCustomProperties: 0
+    importConstraints: 0
+    animationCompression: 1
+    animationRotationError: 0.5
+    animationPositionError: 0.5
+    animationScaleError: 0.5
+    animationWrapMode: 0
+    extraExposedTransformPaths: []
+    extraUserProperties: []
+    clipAnimations: []
+    isReadable: 0
+  meshes:
+    lODScreenPercentages: []
+    globalScale: 1
+    meshCompression: 0
+    addColliders: 0
+    useSRGBMaterialColor: 1
+    sortHierarchyByName: 1
+    importPhysicalCameras: 1
+    importVisibility: 1
+    importBlendShapes: 1
+    importCameras: 1
+    importLights: 1
+    nodeNameCollisionStrategy: 1
+    fileIdsGeneration: 2
+    swapUVChannels: 0
+    generateSecondaryUV: 0
+    useFileUnits: 1
+    keepQuads: 0
+    weldVertices: 1
+    bakeAxisConversion: 0
+    preserveHierarchy: 0
+    skinWeightsMode: 0
+    maxBonesPerVertex: 4
+    minBoneWeight: 0.001
+    optimizeBones: 1
+    generateMeshLods: 0
+    meshLodGenerationFlags: 0
+    maximumMeshLod: -1
+    meshOptimizationFlags: -1
+    indexFormat: 0
+    secondaryUVAngleDistortion: 8
+    secondaryUVAreaDistortion: 15.000001
+    secondaryUVHardAngle: 88
+    secondaryUVMarginMethod: 1
+    secondaryUVMinLightmapResolution: 40
+    secondaryUVMinObjectScale: 1
+    secondaryUVPackMargin: 4
+    useFileScale: 1
+    strictVertexDataChecks: 0
+  tangentSpace:
+    normalSmoothAngle: 60
+    normalImportMode: 0
+    tangentImportMode: 3
+    normalCalculationMode: 4
+    legacyComputeAllNormalsFromSmoothingGroupsWhenMeshHasBlendShapes: 0
+    blendShapeNormalImportMode: 1
+    normalSmoothingSource: 0
+  referencedClips: []
+  importAnimation: 1
+  humanDescription:
+    serializedVersion: 3
+    human: []
+    skeleton: []
+    armTwist: 0.5
+    foreArmTwist: 0.5
+    upperLegTwist: 0.5
+    legTwist: 0.5
+    armStretch: 0.05
+    legStretch: 0.05
+    feetSpacing: 0
+    globalScale: 1
+    rootMotionBoneName: 
+    hasTranslationDoF: 0
+    hasExtraRoot: 0
+    skeletonHasParents: 1
+  lastHumanDescriptionAvatarSource: {instanceID: 0}
+  autoGenerateAvatarMappingIfUnspecified: 1
+  animationType: 2
+  humanoidOversampling: 1
+  avatarSetup: 0
+  addHumanoidExtraRootOnlyWhenUsingAvatar: 1
+  importBlendShapeDeformPercent: 1
+  remapMaterialsIfMaterialImportModeIsNone: 0
+  additionalBone: 0
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

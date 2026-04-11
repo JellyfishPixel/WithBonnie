@@ -1,0 +1,14 @@
+fileFormatVersion: 2
+guid: 9ffeaeb2a431c864485dc399a3b246f5
+AssemblyDefinitionImporter:
+  externalObjects: {}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 330755
+  packageName: Video Player
+  packageVersion: 1.0
+  assetPath: Assets/4Hands2Cats/VideoPlayer/Scripts/VideoPlayer.asmdef
+  uploadId: 799270

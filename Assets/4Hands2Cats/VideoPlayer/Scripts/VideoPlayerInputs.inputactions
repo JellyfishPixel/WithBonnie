@@ -1,0 +1,74 @@
+{
+    "name": "VideoPlayerInputs",
+    "maps": [
+        {
+            "name": "VideoPlayerControl",
+            "id": "a22a48bf-a40b-4188-ac90-6f2a3498cd80",
+            "actions": [
+                {
+                    "name": "PlayPause",
+                    "type": "Button",
+                    "id": "bf6194d1-d790-40dd-9699-58b0778a4799",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "NextFrame",
+                    "type": "Button",
+                    "id": "7afbc1fb-fa4f-4032-a2b9-9485ad21eb28",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "PreviousFrame",
+                    "type": "Button",
+                    "id": "9c48ba60-a00c-49a6-acfa-de141ad8c587",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "b2d7b828-0e91-4ef7-9308-db4e970b7cd5",
+                    "path": "<Keyboard>/space",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PlayPause",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a73852a4-224e-43a2-96fa-742190316134",
+                    "path": "<Keyboard>/rightArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "NextFrame",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ed2a7e0b-5e6e-436d-973e-f8773242ecfa",
+                    "path": "<Keyboard>/leftArrow",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "PreviousFrame",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}

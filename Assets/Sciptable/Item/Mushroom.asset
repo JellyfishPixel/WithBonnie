@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 564a82e0ceba4a845a2dfda6cd3e2e71, type: 3}
+  m_Name: Mushroom
+  m_EditorClassIdentifier: Assembly-CSharp::DeliveryItemData
+  itemName: Mushroom
+  itemId: 
+  icon: {fileID: 21300000, guid: b19a3953f90f4ef48a70263878ab5da5, type: 3}
+  category: 0
+  deliveryLimitDays: 6
+  baseQuality: 100
+  baseReward: 140
+  destinationId: Mushroom
+  address: 
+  information: 
+  minFallHeightMeter: 1
+  damagePerMeter: 5
+  requiresCold: 0
+  damagedThreshold: 80
+  brokenThreshold: 20
+  breaksOnWater: 0
+  waterSensitive: 1
+  waterDamageInterval: 3
+  waterDamagePerTick: 1
+  allowedBoxTypes: 030000000000000001000000020000000400000005000000
+  dialogueData: {fileID: 11400000, guid: bf17bea1deb46bf479147c2feba80fd2, type: 2}
