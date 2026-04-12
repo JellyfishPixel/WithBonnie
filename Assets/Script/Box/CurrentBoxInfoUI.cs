@@ -44,17 +44,16 @@ public class CurrentBoxInfoUI : MonoBehaviour
         // ตัวอย่าง: ดูกล่องอันแรกใน activeBoxes (หรือคุณจะให้ผู้เล่นเลือก index ก็ได้)
         var rec = gm.activeBoxes[0];
         var data = rec.data;
-        var item = rec.itemInstance;
+        var package = rec.packageData;
 
-        if (!data || !item)
+        if (!data || package == null)
             return;
 
         nameText.text = data.itemName.ToUpperInvariant();
         categoryText.text = data.category.ToString();
-        qualityText.text = $"QUALITY {item.currentQuality:0}%";
+        qualityText.text = $"QUALITY {package.itemQuality:0}%";
 
-        int daysPassed = gm.currentDay - rec.dayCreated;
-        int daysLeft = data.deliveryLimitDays - daysPassed;
+        int daysLeft = package.remainingDays;
         daysLeft = Mathf.Max(daysLeft, 0);
 
         timeLeftText.text = $"TIME LEFT: {daysLeft} DAY(S)";

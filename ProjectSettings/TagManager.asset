@@ -15,6 +15,7 @@ TagManager:
   - Obstacle
   - BlockUI
   - HUD
+  - holdobject
   layers:
   - Default
   - TransparentFX

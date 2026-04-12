@@ -69,10 +69,11 @@ public class DeliveryItemInstance : MonoBehaviour, IAbandonable
     }
     public void OnAbandoned()
     {
-        if (data == null || GameManager.Instance == null) return;
+        if (data == null) return;
 
         int penalty = Mathf.Max(0, data.baseReward);
-        GameManager.Instance.AddMoney(-penalty);
+        if (GameManager.Instance != null)
+            GameManager.Instance.ApplyPenalty(penalty);
         if (ownerNPC != null)
         {
             ownerNPC.ForceExitAndClearItem();
@@ -98,21 +99,6 @@ public class DeliveryItemInstance : MonoBehaviour, IAbandonable
     void Update()
     {
         if (!inWater || data == null || isBroken) return;
-
-        // ถ้าของนี้ไม่แคร์น้ำ (breaksOnWater=false) จะข้าม
-        if (!data.breaksOnWater) return;
-
-        waterTimer += Time.deltaTime;
-        if (waterTimer >= waterDamageInterval)
-        {
-            waterTimer -= waterDamageInterval;
-
-            // 3 วินาที → 1 ดาเมจ
-            ApplyDamage(waterDamagePerTick);
-
-            Debug.Log($"[ItemInstance] {data.itemName} water dmg={waterDamagePerTick}, Q={currentQuality:F0}");
-        }
-
         HandleWaterDamage();
     }
     private void HandleWaterDamage()
@@ -123,18 +109,23 @@ public class DeliveryItemInstance : MonoBehaviour, IAbandonable
         // ถ้าไม่ได้ตั้งให้ sensitive ก็ไม่ต้องทำอะไร
         if (!data.waterSensitive) return;
 
-        // นับเวลา
+        float interval = data.waterDamageInterval > 0f
+            ? data.waterDamageInterval
+            : waterDamageInterval;
+        float damage = data.waterDamagePerTick > 0f
+            ? data.waterDamagePerTick
+            : waterDamagePerTick;
+
         waterTimer += Time.deltaTime;
 
-        // ทุกๆ 1 วินาที -> ลดคุณภาพ 1 หน่วย
-        while (waterTimer >= 1f)
+        while (waterTimer >= interval)
         {
-            waterTimer -= 1f;
+            waterTimer -= interval;
 
             float before = currentQuality;
-            ApplyDamage(1f);  // ลด 1 หน่วย
+            ApplyDamage(damage);
 
-            Debug.Log($"[ItemInstance] {data.itemName} water tick dmg=1, Q {before:F1} -> {currentQuality:F1}");
+            Debug.Log($"[ItemInstance] {data.itemName} water tick dmg={damage:F1}, Q {before:F1} -> {currentQuality:F1}");
 
             if (isBroken)     // ถ้าพังแล้ว จะไม่ต้องนับต่อ
             {
@@ -174,9 +165,6 @@ public class DeliveryItemInstance : MonoBehaviour, IAbandonable
 
         if (dmg <= 0)
             return;  
-
-        ApplyDamage(dmg);
-
 
         ApplyDamage(dmg);
 

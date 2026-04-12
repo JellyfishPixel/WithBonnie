@@ -20,17 +20,8 @@ public class BoxBubble : MonoBehaviour
     int bubbleCount = 0;
     float baseY;
     Coroutine scaleCo;
-    BoxCore box;
-
-    void Awake()
-    {
-        box = GetComponentInParent<BoxCore>();
-    }
-
     void Start()
     {
-        box = GetComponentInParent<BoxCore>();
-
         if (bubbleObject != null)
         {
             baseY = bubbleObject.transform.localScale.y;
@@ -50,117 +41,51 @@ public class BoxBubble : MonoBehaviour
         return bubbleCount >= maxBubble;
     }
 
-    public void AddBubble()
+    public void AddBubbleUnit(BubbleType bubbleType)
     {
-        Debug.Log("========== AddBubble CALLED ==========");
-
-        // 1. เช็ค BoxCore
-        if (box == null)
-        {
-            Debug.LogError("AddBubble STOP: box == NULL (ไม่มี BoxCore บน Parent)");
-            return;
-        }
-        else
-        {
-            Debug.Log("BoxCore FOUND: " + box.name);
-        }
-
-        // 2. เช็ค bubbleObject
         if (bubbleObject == null)
         {
-            Debug.LogError("AddBubble STOP: bubbleObject == NULL (ยังไม่ได้ตั้ง bubbleObject ใน Inspector)");
+            Debug.LogError("[BoxBubble] bubbleObject is missing.");
             return;
         }
-        else
-        {
-            Debug.Log("bubbleObject FOUND: " + bubbleObject.name);
-        }
-
-        // 3. เช็ค Step จาก BoxCore
-        Debug.Log("Box Step = " + box.Step);
-        Debug.Log("HasItem = " + box.HasItem);
-        Debug.Log("BubbleFull = " + box.BubbleFull);
-
-        // 4. เช็คว่าสามารถใส่ bubble ได้หรือไม่
-        bool canAdd = box.CanAddBubble();
-        Debug.Log("CanAddBubble() = " + canAdd);
-
-        if (!canAdd)
-        {
-            Debug.LogWarning("AddBubble CANCELLED: BoxCore.CanAddBubble() == false");
-            return;
-        }
-
-        // 5. เช็คจำนวน bubble
-        Debug.Log($"BubbleCount = {bubbleCount} / {maxBubble}");
 
         if (bubbleCount >= maxBubble)
-        {
-            Debug.LogWarning("AddBubble STOP: bubbleCount >= maxBubble (ครบแล้ว)");
             return;
-        }
 
-        // 6. แสดง bubble object
         if (!bubbleObject.activeSelf)
-        {
             bubbleObject.SetActive(true);
-            Debug.Log("bubbleObject.SetActive(true)");
-        }
-        ApplyVisualByBubbleType();
-        // 7. เพิ่มจำนวน
-        bubbleCount++;
-        Debug.Log("bubbleCount INCREASED -> " + bubbleCount);
 
-        // 8. คำนวณ scale ใหม่
+        ApplyVisual(bubbleType);
+        bubbleCount++;
+
         Vector3 s = bubbleObject.transform.localScale;
         float targetY = baseY + stepY * bubbleCount;
         Vector3 target = new Vector3(s.x, targetY, s.z);
 
-        Debug.Log($"Scale start Y = {s.y} | Target Y = {targetY}");
-
-        // 9. Stop coroutine เก่า
         if (scaleCo != null)
-        {
             StopCoroutine(scaleCo);
-            Debug.Log("Old coroutine stopped");
-        }
 
-        // 10. เริ่ม coroutine ใหม่
         scaleCo = StartCoroutine(ScaleTo(target, scaleDuration));
-        Debug.Log("ScaleTo coroutine started");
-
-        if (bubbleCount == 1)
-        {
-            Debug.Log("Bubble START -> Lock Box");
-            box.NotifyBubbleStarted();
-        }
-
-        // ✅ ครบจำนวนตามเดิม (เอาไว้ใช้เช็คว่า bubble เต็ม / UI / เอฟเฟกต์)
-        if (bubbleCount >= maxBubble)
-        {
-            Debug.Log("Bubble FULL -> Notify BoxCore");
-            box.NotifyBubbleFull();
-        }
-        Debug.Log("========== AddBubble FINISHED ==========");
     }
-    void ApplyVisualByBubbleType()
+
+    void ApplyVisual(BubbleType bubbleType)
     {
-        if (bubbleRenderer == null || box == null)
+        if (bubbleRenderer == null)
             return;
 
         Texture tex = null;
 
-        switch (box.BubbleType)
+        switch (bubbleType)
         {
-            case BubbleType.Basic:   // ธรรมดา
+            case BubbleType.Basic:
                 tex = basicTexture;
                 break;
 
-            case BubbleType.Strong:  // แข็งแรง
+            case BubbleType.Strong:
                 tex = strongTexture;
                 break;
 
-            case BubbleType.Ice:     // น้ำแข็ง
+            case BubbleType.Ice:
                 tex = iceTexture;
                 break;
         }
@@ -171,7 +96,7 @@ public class BoxBubble : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning($"[BoxBubble] No texture set for BubbleType: {box.BubbleType}");
+            Debug.LogWarning($"[BoxBubble] No texture set for BubbleType: {bubbleType}");
         }
     }
     public bool HasAnyBubble()

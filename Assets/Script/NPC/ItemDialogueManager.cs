@@ -70,6 +70,11 @@ public class ItemDialogueManager : MonoBehaviour
         if (panel) panel.SetActive(false);
     }
 
+    void OnDisable()
+    {
+        UILockManager.Release(this);
+    }
+
     void Start()
     {
         movementLocker = FindFirstObjectByType<PlayerMovementLocker>();
@@ -114,7 +119,7 @@ public class ItemDialogueManager : MonoBehaviour
                 UpdateChoiceHighlight();
             }
 
-            if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
+            if (IsAdvancePressed())
             {
                 ConfirmCurrentChoice();
             }
@@ -123,10 +128,19 @@ public class ItemDialogueManager : MonoBehaviour
         }
 
    
-        if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space))
+        if (IsAdvancePressed())
         {
             SkipTypingOrNext();
         }
+    }
+
+    bool IsAdvancePressed()
+    {
+        return Input.GetMouseButtonDown(0)
+            || Input.GetKeyDown(KeyCode.Space)
+            || Input.GetKeyDown(KeyCode.E)
+            || Input.GetKeyDown(KeyCode.Return)
+            || Input.GetKeyDown(KeyCode.KeypadEnter);
     }
 
     public void Show(GameObject actorOwner, ItemDialogueData flow,
@@ -148,16 +162,8 @@ public class ItemDialogueManager : MonoBehaviour
         stepIndex = 0;
 
         if (panel) panel.SetActive(true);
-        
-        if (movementLocker != null)
-            movementLocker.Lock();
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-        var camMgr = CameraModeManager.Instance;
-        if (camMgr != null && camMgr.CurrentMode == CameraMode.ThirdPerson)
-        {
-            camMgr.thirdPersonController?.LockMovement();
-        }
+
+        UILockManager.Instance.PushLock(this, UILockOptions.Dialogue);
 
         ignoreFirstClick = true;
         isShowing = true;
@@ -381,12 +387,7 @@ public class ItemDialogueManager : MonoBehaviour
 
         yield return null;
 
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
-        StarterAssetsInputs starterInputs = FindFirstObjectByType<StarterAssetsInputs>();
-        if (starterInputs != null)
-            starterInputs.cursorLocked = true;
+        UILockManager.Instance.PopLock(this);
 
 
         var camMgr = CameraModeManager.Instance;
@@ -403,14 +404,6 @@ public class ItemDialogueManager : MonoBehaviour
         }
 
         yield return null; 
-
-  
-        movementLocker?.Unlock();
-
-        if (camMgr != null && camMgr.CurrentMode == CameraMode.ThirdPerson)
-        {
-            camMgr.thirdPersonController?.UnlockMovement();
-        }
     }
 
     void ResetThirdPersonControllerSafely()

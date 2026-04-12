@@ -87,7 +87,7 @@ public class EconomyManager : MonoBehaviour
     public const int TAPE_USES_PER_ROLL = 10;
 
     [Header("TEST MODE")]
-    public bool testSessionNoPrefs = true;  // ✅ เปิดไว้ตอนเทส
+    public bool testSessionNoPrefs = false;  // Keep economy/material stock persistence while full game save is disabled.
 
     void Awake()
     {
@@ -180,6 +180,23 @@ public class EconomyManager : MonoBehaviour
         Debug.Log($"[Eco] Spend {price} => cashToday={cashToday}, bank={bankBalance}");
 
         return true;
+    }
+
+    public void ApplyPenalty(int amount)
+    {
+        int remaining = Mathf.Max(0, amount);
+        if (remaining <= 0) return;
+
+        int cashPayment = Mathf.Min(cashToday, remaining);
+        cashToday -= cashPayment;
+        remaining -= cashPayment;
+
+        int bankPayment = Mathf.Min(bankBalance, remaining);
+        bankBalance -= bankPayment;
+
+        SaveIfAllowed();
+        UpdateMoneyUI();
+        Debug.Log($"[Eco] Penalty {amount} => cashToday={cashToday}, bank={bankBalance}");
     }
 
     /// <summary>

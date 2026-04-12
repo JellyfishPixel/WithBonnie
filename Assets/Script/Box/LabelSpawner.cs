@@ -56,6 +56,9 @@ public class LabelSpawner : MonoBehaviour, IInteractable
             return;
         }
 
+        if (box != null)
+            box.RememberLabelPrefab(labelPrefab);
+
         StartCoroutine(SpawnAndAnimate());
     }
 

@@ -1,8 +1,5 @@
-﻿using NUnit;
 using StarterAssets;
-using Unity.VisualScripting.Antlr3.Runtime;
 using UnityEngine;
-using static UnityEngine.Rendering.DebugUI;
 
 public class BoxInventoryUI : MonoBehaviour
 {
@@ -12,7 +9,7 @@ public class BoxInventoryUI : MonoBehaviour
     PlayerMovementLocker movementLocker;
     bool isOpen;
 
-    [Header("Slot UIs (สูงสุด 3 ช่อง)")]
+    [Header("Slot UIs (?????? 3 ????)")]
     public BoxInventorySlotUI[] slotUIs;
     GameObject currentPage;
 
@@ -28,6 +25,12 @@ public class BoxInventoryUI : MonoBehaviour
     {
         if (panel != null)
             panel.SetActive(false);
+    }
+
+    void OnDisable()
+    {
+        UILockManager.Release(this);
+        isOpen = false;
     }
 
     void Update()
@@ -51,10 +54,7 @@ public class BoxInventoryUI : MonoBehaviour
         if (panel) panel.SetActive(true);
 
 
-        movementLocker?.Lock();
-
-        Time.timeScale = 0f;
-        CameraModeManager.Instance.SetUILock(true, true);
+        UILockManager.Instance.PushLock(this, UILockOptions.Menu);
 
 
         var inv = BoxInventory.Instance;
@@ -97,8 +97,7 @@ public class BoxInventoryUI : MonoBehaviour
 
         if (panel) panel.SetActive(false);
 
-        Time.timeScale = 1f;
-        CameraModeManager.Instance.SetUILock(false, false);
+        UILockManager.Instance.PopLock(this);
 
     }
     void ShowPage(GameObject target)
@@ -129,3 +128,5 @@ public class BoxInventoryUI : MonoBehaviour
     }
 
 }
+
+

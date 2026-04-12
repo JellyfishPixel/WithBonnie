@@ -19,15 +19,8 @@ public class MainMenuUI : MonoBehaviour
 
         Time.timeScale = 1f;
 
-        // 🔹 แสดงปุ่ม Load เฉพาะเมื่อมีเซฟ
-        if (SaveManager.Instance != null && SaveManager.Instance.HasSave())
-        {
-            loadGameButton.gameObject.SetActive(true);
-        }
-        else
-        {
+        if (loadGameButton)
             loadGameButton.gameObject.SetActive(false);
-        }
     }
 
     // ================= BUTTON EVENTS =================
@@ -40,10 +33,7 @@ public class MainMenuUI : MonoBehaviour
 
     public void OnLoadGame()
     {
-        SceneManager.LoadScene(gameSceneName);
-        StartCoroutine(LoadAfterScene());
-        Cursor.visible = false;
-
+        Debug.Log("[MainMenuUI] Load game is disabled until the new save system is rebuilt.");
     }
 
     public void OnQuit()
@@ -53,12 +43,4 @@ public class MainMenuUI : MonoBehaviour
 
     // ================= HELPERS =================
 
-    System.Collections.IEnumerator LoadAfterScene()
-    {
-        yield return null; // รอให้ scene โหลดก่อน
-        if (SaveManager.Instance != null)
-        {
-            SaveManager.Instance.LoadGame();
-        }
-    }
 }

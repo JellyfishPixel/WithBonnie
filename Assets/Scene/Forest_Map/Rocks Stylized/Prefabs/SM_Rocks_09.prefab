@@ -12,7 +12,7 @@ GameObject:
   - component: {fileID: 3059714380081280395}
   - component: {fileID: 9006334168714472072}
   - component: {fileID: 5033262407926634232}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: SM_Rocks_09
   m_TagString: Untagged
   m_Icon: {fileID: 0}

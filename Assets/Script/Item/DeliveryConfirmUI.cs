@@ -21,6 +21,7 @@ public class DeliveryConfirmUI : MonoBehaviour
     PlayerInteractionSystem interactionSystem;
     StarterAssetsInputs starterInputs;
     public TextMeshProUGUI confirmButtonText;
+    public bool IsVisible => cg != null && cg.alpha > 0.001f;
 
     void Awake()
     {
@@ -44,6 +45,7 @@ public class DeliveryConfirmUI : MonoBehaviour
     void OnDisable()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
+        UILockManager.Release(this);
     }
 
     void OnSceneLoaded(Scene scene, LoadSceneMode mode)
@@ -64,6 +66,7 @@ public class DeliveryConfirmUI : MonoBehaviour
         cg.blocksRaycasts = false;
         cg.interactable = false;
         rect.localScale = Vector3.one * 0.8f;
+        currentPoint = null;
     }
 
     public void Show(DeliveryPoint point, bool hasItem)
@@ -75,7 +78,7 @@ public class DeliveryConfirmUI : MonoBehaviour
         cg.blocksRaycasts = true;
         cg.interactable = true;
 
-        CameraModeManager.Instance.SetUILock(true, true);
+        UILockManager.Instance.PushLock(this, UILockOptions.Dialogue);
 
         LeanTween.cancel(gameObject);
 
@@ -104,16 +107,17 @@ public class DeliveryConfirmUI : MonoBehaviour
             {
                 HideImmediate();
 
-                CameraModeManager.Instance.SetUILock(false, false);
+                UILockManager.Instance.PopLock(this);
             });
     }
-    IEnumerator ForceCursor()
-    {
-        yield return null;
 
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
+    public void ForceHide()
+    {
+        LeanTween.cancel(gameObject);
+        HideImmediate();
+        UILockManager.Release(this);
     }
+
     public void OnConfirm()
     {
         if (currentPoint != null)

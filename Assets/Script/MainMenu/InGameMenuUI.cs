@@ -27,6 +27,12 @@ public class InGameMenuUI : MonoBehaviour
         starterInputs = FindFirstObjectByType<StarterAssetsInputs>();
     }
 
+    void OnDisable()
+    {
+        UILockManager.Release(this);
+        isOpen = false;
+    }
+
 
     void Update()
     {
@@ -52,21 +58,7 @@ public class InGameMenuUI : MonoBehaviour
             saveButtonText.text = saveLabel;
 
         // 🔒 ล็อกผู้เล่น
-        movementLocker?.Lock();
-
-        // ⏸ หยุดเวลา
-        Time.timeScale = 0f;
-
-        // 🖱 เปิดเมาส์
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
-        // 🔒 ล็อกกล้อง (Starter Assets)
-        if (starterInputs != null)
-        {
-            starterInputs.look = Vector2.zero;
-            starterInputs.cursorLocked = false;
-        }
+        UILockManager.Instance.PushLock(this, UILockOptions.Menu);
 
     }
 
@@ -78,26 +70,7 @@ public class InGameMenuUI : MonoBehaviour
 
         if (panel) panel.SetActive(false);
 
-        movementLocker?.Unlock();
-        var interact = FindFirstObjectByType<PlayerInteractionSystem>();
-        if (interact != null)
-            interact.UnlockMovement();
-        Time.timeScale = 1f;
-
-        Cursor.lockState = CursorLockMode.Locked;
-        Cursor.visible = false;
-
-        if (starterInputs != null)
-        {
-            starterInputs.cursorLocked = true;
-
-            // ⭐ Reset Input (สำคัญมาก)
-            starterInputs.move = Vector2.zero;
-            starterInputs.look = Vector2.zero;
-            starterInputs.jump = false;
-            starterInputs.sprint = false;
-        }
-        PlayerInteractionSystem.BlockWorldInput = false;
+        UILockManager.Instance.PopLock(this);
     }
 
     // ================= BUTTON EVENTS =================
@@ -109,23 +82,16 @@ public class InGameMenuUI : MonoBehaviour
 
     public void OnBackToMainMenu()
     {
-        // ป้องกัน time ค้าง
-        Time.timeScale = 1f;
+        UILockManager.Instance.PopLock(this);
 
         SceneManager.LoadScene(mainMenuScene);
     }
     public void OnSaveGame()
     {
-        if (SaveManager.Instance == null)
-            return;
-
-        SaveManager.Instance.SaveGame();
-
-        // 🔹 เปลี่ยนข้อความปุ่ม
         if (saveButtonText)
-            saveButtonText.text = savedLabel;
+            saveButtonText.text = "SAVE OFF";
 
-        Debug.Log("[InGameMenuUI] ▶ Game Save");
+        Debug.Log("[InGameMenuUI] Full game save is disabled until the new save system is rebuilt.");
     }
 
 

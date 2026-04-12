@@ -1448,33 +1448,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a1010ecf1c01a294ebaad5628e26b140, type: 3}
   m_Name: 
   m_EditorClassIdentifier: '::'
+  boxType: 0
+  isWaterproofBox: 0
+  isColdBox: 0
+  boxPickupTag: pickable
   pickableTag: pickable
   itemArea: {fileID: 249812383215183644}
-  isAbandoned: 0
-  boxPickupTag: pickable
-  labelSpawned: 0
   leftLid: {fileID: 4819027451887089478}
   rightLid: {fileID: 6154243858181685386}
-  step: 0
-  hasItem: 0
-  bubbleFull: 0
-  lidsClosed: 0
-  tapeDone: 0
-  labelDone: 0
-  bubbleStarted: 0
-  isWaterproofBox: 0
-  boxType: 0
   boxDamageDivisor: 2
-  totalDamageDivisor: 1
-  protectionPercent: 0
-  isColdBox: 0
   bubbleType: 0
   hasIceBubble: 0
   extraDeadlineDaysWithIce: 1
+  interactSound: {fileID: 8300000, guid: 7ca30417ba1145646836dff480ccc2c6, type: 3}
+  step: 0
+  hasItem: 0
+  bubbleStarted: 0
+  bubbleFilled: 0
+  lidsClosed: 0
+  tapeApplied: 0
+  labelApplied: 0
+  labelRequested: 0
+  packedForCarry: 0
+  storedInInventory: 0
+  deliveredSuccessfully: 0
+  abandoned: 0
   currentItemData: {fileID: 0}
   currentItemInstance: {fileID: 0}
-  interactSound: {fileID: 8300000, guid: 7ca30417ba1145646836dff480ccc2c6, type: 3}
-  deliveredSuccessfully: 0
+  sourceBoxPrefab: {fileID: 0}
+  usedLabelPrefab: {fileID: 0}
+  usedTapeMaterial: {fileID: 0}
+  usedTapeColor: 0
 --- !u!4 &3093471409491763370 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: d97844c237c6db4448dbab25245de489, type: 3}

@@ -82,7 +82,11 @@ public class BoxSpawner : MonoBehaviour, IInteractable
             return;
         }
 
-        Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
+        GameObject boxObject = Instantiate(prefab, spawnPoint.position, spawnPoint.rotation);
+        var boxCore = boxObject.GetComponent<BoxCore>();
+        if (boxCore != null)
+            boxCore.RememberSourcePrefab(prefab);
+
         PlayInteractSound();
         var shopUI = FindFirstObjectByType<BoxShopUI>();
         if (shopUI != null)

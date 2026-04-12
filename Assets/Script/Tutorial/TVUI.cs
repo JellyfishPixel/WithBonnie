@@ -46,6 +46,12 @@ public class TVUI : MonoBehaviour
         starterInputs = FindFirstObjectByType<StarterAssetsInputs>();
     }
 
+    void OnDisable()
+    {
+        UILockManager.Release(this);
+        isOpen = false;
+    }
+
     // ================= OPEN =================
 
     public void OpenTV()
@@ -64,21 +70,7 @@ public class TVUI : MonoBehaviour
         LeanTween.scale(tvRect, Vector3.one, 0.25f)
         .setEaseOutBack();
 
-        // Lock movement
-        movementLocker?.Lock();
-        interactionSystem?.LockMovement();
-
-        // Cursor
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
-
-        if (starterInputs != null)
-        {
-            starterInputs.look = Vector2.zero;
-            starterInputs.cursorLocked = false;
-        }
-
-        StartCoroutine(ForceCursor());
+        UILockManager.Instance.PushLock(this, UILockOptions.Dialogue);
 
         ChannelInput();
 
@@ -102,14 +94,7 @@ public class TVUI : MonoBehaviour
         {
             root.SetActive(false);
 
-            movementLocker?.Unlock();
-            interactionSystem?.UnlockMovement();
-
-            Cursor.lockState = CursorLockMode.Locked;
-            Cursor.visible = false;
-
-            if (starterInputs != null)
-                starterInputs.cursorLocked = true;
+            UILockManager.Instance.PopLock(this);
         });
 
         AddSalesPopupUI.ShowMessage("TV closed");
@@ -219,14 +204,6 @@ public class TVUI : MonoBehaviour
 
         inputPage.SetActive(false);
         howToPlayPage.SetActive(false);
-    }
-
-    IEnumerator ForceCursor()
-    {
-        yield return null;
-
-        Cursor.lockState = CursorLockMode.None;
-        Cursor.visible = true;
     }
 
     void Update()

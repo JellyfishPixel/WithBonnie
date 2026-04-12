@@ -146,8 +146,7 @@ public class BoxShopUI : MonoBehaviour
         if (rootPanel != null)
             rootPanel.SetActive(true);
 
-        Time.timeScale = 0f;
-        CameraModeManager.Instance.SetUILock(true, true);
+        UILockManager.Instance.PushLock(this, UILockOptions.Menu);
 
         ResetSelections();
         RefreshUI();
@@ -161,8 +160,7 @@ public class BoxShopUI : MonoBehaviour
         if (rootPanel != null)
             rootPanel.SetActive(false);
 
-        Time.timeScale = 1f;
-        CameraModeManager.Instance.SetUILock(false, false);
+        UILockManager.Instance.PopLock(this);
 
 
         //if (currentTerminal != null)
@@ -171,6 +169,12 @@ public class BoxShopUI : MonoBehaviour
         currentPlayer = null;
         currentTerminal = null;
         //fpc = null;
+    }
+
+    void OnDisable()
+    {
+        UILockManager.Release(this);
+        isOpen = false;
     }
     void ShowPage(GameObject target)
     {

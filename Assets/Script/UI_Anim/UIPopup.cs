@@ -44,9 +44,15 @@ public class UIPopup : MonoBehaviour
     void OnEnable()
     {
         if (blockWorldInput)
-            PlayerInteractionSystem.BlockWorldInput = true;
+            UILockManager.Instance.PushLock(this, UILockOptions.Popup);
 
         PlayOpen();
+    }
+
+    void OnDisable()
+    {
+        if (blockWorldInput)
+            UILockManager.Release(this);
     }
     // ================= OPEN =================
 
@@ -134,7 +140,7 @@ public class UIPopup : MonoBehaviour
            .setOnComplete(() =>
            {
                if (blockWorldInput)
-                   PlayerInteractionSystem.BlockWorldInput = false;
+                   UILockManager.Instance.PopLock(this);
 
                gameObject.SetActive(false);
            });
@@ -157,6 +163,9 @@ public class UIPopup : MonoBehaviour
             .setIgnoreTimeScale(true)
             .setOnComplete(() =>
             {
+                if (blockWorldInput)
+                    UILockManager.Instance.PopLock(this);
+
                 transform.localPosition = defaultPos;
                 gameObject.SetActive(false);
             });

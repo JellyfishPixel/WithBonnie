@@ -42,35 +42,15 @@ public class TapeDragScaler : MonoBehaviour
     [SerializeField] private float tapeVolume = 1f;
 
     private AudioSource tapeAudio;
-    public void SelectDispenser(TapeDispenser dispenser)
+    public void SetSelectedDispenser(TapeDispenser dispenser)
     {
         if (dispenser == null) return;
-
-        // 🔥 กล่องที่ Area บอกว่าเป็น current
-        var currentBox = BoxWorkArea.Instance.CurrentBox;
-        if (!currentBox) return;
-
-        // 🔥 กล่องที่ TapeDragScaler ตัวนี้สังกัดอยู่
-        var myBox = GetComponentInParent<BoxCore>();
-
-        // ❌ ถ้าไม่ใช่กล่อง current → ห้ามทำอะไร
-        if (myBox != currentBox)
-            return;
-
-        var eco = EconomyManager.Instance;
-        if (eco != null && !eco.HasTapeUse(dispenser.tapeColor))
-        {
-            Debug.Log("[TapeDragScaler] No tape left for this color.");
-            AddSalesPopupUI.ShowMessage("No tape left.\nPlease buy more tape rolls at the shop.");
-            selectedDispenser = null;
-            cube.SetActive(false);
-            return;
-        }
 
         selectedDispenser = dispenser;
         Debug.Log($"[TapeDragScaler] Dispenser selected: {dispenser.name}");
 
-        if (currentBox.IsFinsihedClose)
+        var currentBox = BoxWorkArea.Instance != null ? BoxWorkArea.Instance.CurrentBox : null;
+        if (currentBox != null && currentBox.IsFinsihedClose)
         {
             cube.SetActive(true);
             StartTapeTutorial();
@@ -88,6 +68,29 @@ public class TapeDragScaler : MonoBehaviour
     bool HasSelectedDispenser()
     {
         return selectedDispenser != null;
+    }
+
+    public void RestoreFinishedTape(Material material, TapeColor tapeColor)
+    {
+        selectedDispenser = null;
+        isTapeDone = true;
+        tapeVisible = true;
+        lastWorldLength = Vector3.Distance(tapeStart.position, tapeEnd.position);
+        currentWorldLength = lastWorldLength;
+
+        if (tapeObject == null)
+            return;
+
+        tapeObject.SetActive(true);
+
+        var renderer = tapeObject.GetComponentInChildren<Renderer>();
+        if (renderer != null && material != null)
+            renderer.material = material;
+
+        SetTapeScaleWorld(lastWorldLength);
+
+        if (cube != null)
+            cube.SetActive(false);
     }
 
 
@@ -150,7 +153,9 @@ public class TapeDragScaler : MonoBehaviour
                 var dispenser = hit.collider.GetComponent<TapeDispenser>();
                 if (dispenser != null)
                 {
-                    SelectDispenser(dispenser);
+                    var currentBox = BoxWorkArea.Instance != null ? BoxWorkArea.Instance.CurrentBox : null;
+                    if (currentBox != null)
+                        BoxTapeWorkflowService.TrySelectTape(currentBox, dispenser, this);
 
                     // ▶ เริ่ม tutorial preview หลังเลือกสี
                     StartTapeTutorial();
@@ -245,14 +250,8 @@ public class TapeDragScaler : MonoBehaviour
             // ===== ปิดเทปสำเร็จ =====
             isTapeDone = true;
 
-            if (selectedDispenser != null && EconomyManager.Instance != null)
-            {
-                EconomyManager.Instance.TryConsumeTapeUse(selectedDispenser.tapeColor);
-                var shopUI = FindFirstObjectByType<BoxShopUI>();
-                if (shopUI) shopUI.RefreshUI();
-            }
-
-            box.NotifyTapeDone();
+            if (selectedDispenser != null)
+                BoxTapeWorkflowService.CompleteTape(box, selectedDispenser);
 
             // tutorial object ไม่ต้องใช้แล้ว
             cube.SetActive(false);

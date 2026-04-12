@@ -40,6 +40,7 @@ public class GameManager : MonoBehaviour
     [System.Serializable]
     public class DeliveryRecord
     {
+        public PackedBoxData packageData;
         public BoxCore box;
         public DeliveryItemInstance itemInstance;
         public DeliveryItemData data;
@@ -220,6 +221,24 @@ public class GameManager : MonoBehaviour
         Debug.Log($"[GameManager] Money (preview total funds): {totalMoney}");
     }
 
+    public void ApplyPenalty(int amount)
+    {
+        amount = Mathf.Max(0, amount);
+        if (amount <= 0) return;
+
+        if (EconomyManager.Instance != null)
+        {
+            EconomyManager.Instance.ApplyPenalty(amount);
+            totalMoney = EconomyManager.Instance.TotalFunds;
+        }
+        else
+        {
+            totalMoney = Mathf.Max(0, totalMoney - amount);
+        }
+
+        Debug.Log($"[GameManager] Penalty applied: {amount}, preview total funds: {totalMoney}");
+    }
+
     // ================== DELIVERY ==================
     void OnEnable()
     {
@@ -365,6 +384,17 @@ public class GameManager : MonoBehaviour
             return;
         }
 
+        RegisterNewDelivery(box.CreatePackedData());
+    }
+
+    public void RegisterNewDelivery(PackedBoxData package)
+    {
+        if (package == null || package.itemData == null)
+        {
+            Debug.LogWarning("[GM] RegisterNewDelivery: package/data is null");
+            return;
+        }
+
         if (activeBoxes.Count >= maxActiveBoxes)
         {
             Debug.LogWarning("[GM] Active boxes is full (3).");
@@ -373,11 +403,10 @@ public class GameManager : MonoBehaviour
 
         var record = new DeliveryRecord
         {
-            box = box,
-            itemInstance = item,
-            data = item.data,
+            packageData = package,
+            data = package.itemData,
             dayCreated = currentDay,
-            destinationId = item.data.destinationId
+            destinationId = package.destinationId
         };
 
         Debug.Log($"[GM] NewDelivery item={record.data.itemName}, destId={record.destinationId}");
@@ -438,28 +467,42 @@ public class GameManager : MonoBehaviour
                 break;
             }
         }
-        if (rec == null || rec.itemInstance == null || rec.data == null) return;
+        if (rec == null || rec.data == null) return;
 
         bool usedColdBox = false;
         bool hasIceBubble = false;
+        float quality = 100f;
 
-        if (rec.box != null)
+        if (rec.packageData != null)
+        {
+            usedColdBox = rec.packageData.boxType == BoxKind.ColdBox;
+            hasIceBubble = rec.packageData.hasIceBubble;
+            quality = rec.packageData.itemQuality;
+        }
+        else if (rec.box != null)
         {
             usedColdBox = (rec.box.boxType == BoxKind.ColdBox);
             hasIceBubble = rec.box.hasIceBubble;
+            if (rec.itemInstance != null)
+                quality = rec.itemInstance.currentQuality;
         }
 
         int baseLimit = rec.data.deliveryLimitDays;
-        int effectiveLimit = rec.itemInstance.CalculateEffectiveDeadlineDays(
-            baseLimit,
-            usedColdBox,
-            hasIceBubble
-        );
+        int effectiveLimit = rec.data.requiresCold && !usedColdBox
+            ? Mathf.Max(1, baseLimit / 3)
+            : baseLimit + (hasIceBubble && usedColdBox ? 1 : 0);
 
         int dayCreated = rec.dayCreated;
         int dayDelivered = currentDay;
 
-        int reward = rec.itemInstance.CalculateReward(dayCreated, dayDelivered, effectiveLimit);
+        int daysUsed = Mathf.Max(0, dayDelivered - dayCreated);
+        float rewardValue = rec.data.baseReward * Mathf.Clamp01(quality / 100f);
+        if (effectiveLimit > 0 && daysUsed > effectiveLimit)
+            rewardValue *= 0.5f;
+        if (quality <= rec.data.brokenThreshold)
+            rewardValue = 0f;
+
+        int reward = Mathf.Max(0, Mathf.RoundToInt(rewardValue));
 
         AddMoney(reward);
         if (rec.itemInstance != null && rec.itemInstance.ownerNPC != null)
@@ -475,8 +518,11 @@ public class GameManager : MonoBehaviour
             minimap.UnregisterIcon(rec.minimapIcon);
             rec.minimapIcon = null;
         }
-        directionArrowUI.RemoveTarget(rec.worldTarget);
-        directionArrowUI.Rebuild();
+        if (directionArrowUI != null)
+        {
+            directionArrowUI.RemoveTarget(rec.worldTarget);
+            directionArrowUI.Rebuild();
+        }
 
 
 

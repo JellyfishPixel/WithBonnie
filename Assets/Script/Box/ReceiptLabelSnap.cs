@@ -89,8 +89,7 @@ public class ReceiptLabelSnap : MonoBehaviour, IInteractable
         if (snappingPreview && previewArea != null)
         {
             FinalizePlace(previewArea, previewWorld, previewRot);
-
-            currentBox.NotifyLabelPasted();
+            BoxLabelWorkflowService.CompleteLabelPlacement(currentBox);
 
             isHeld = false;
             holder = null;
@@ -105,9 +104,7 @@ public class ReceiptLabelSnap : MonoBehaviour, IInteractable
             {
                 FinalizePlace(previewArea, previewWorld, previewRot);
 
-                
-                if (currentBox)
-                    currentBox.NotifyLabelPasted();
+                BoxLabelWorkflowService.CompleteLabelPlacement(currentBox);
 
                 EndHold();
             }
@@ -127,8 +124,7 @@ public class ReceiptLabelSnap : MonoBehaviour, IInteractable
             return;
         }
 
-        var tape = currentBox.GetComponentInChildren<TapeDragScaler>();
-        if (!tape || !tape.isTapeDone)
+        if (!BoxLabelWorkflowService.CanStartLabelPlacement(currentBox))
         {
             Debug.Log("ยังลากเทปปิดกล่องไม่เสร็จ แปะลาเบลไม่ได้");
             return;
@@ -187,8 +183,8 @@ public class ReceiptLabelSnap : MonoBehaviour, IInteractable
         var currentBox = BoxWorkArea.Instance.CurrentBox;
         if (!currentBox) return;
 
-        var tape = currentBox.GetComponentInChildren<TapeDragScaler>();
-        if (!tape || !tape.isTapeDone) return;
+        if (!BoxLabelWorkflowService.CanStartLabelPlacement(currentBox))
+            return;
 
         if (transform.GetComponentInParent<SnapArea>() != null) return;
 

@@ -1,5 +1,4 @@
-﻿using NUnit;
-using System;
+﻿using System;
 using UnityEngine;
 
 public class BoxInventory : MonoBehaviour
@@ -11,6 +10,8 @@ public class BoxInventory : MonoBehaviour
 
     [Header("Box Prefab")]
     public GameObject boxPrefab;
+
+    Transform storageRoot;
 
     [Header("Carry Protection")]
     [Tooltip("ตัวหารดาเมจตอนอยู่ใน inventory (2 = ครึ่งหนึ่ง, 3 = เหลือ 1/3)")]
@@ -24,37 +25,166 @@ public class BoxInventory : MonoBehaviour
     [Serializable]
     public class BoxSlot
     {
+        public PackedBoxData packageData;
+        public BoxCore storedBoxShell;
         public bool hasBox;
-        public BoxKind boxType;
-        public DeliveryItemData itemData;
 
-        [Header("ITEM EXTRA INFO")]
-        public string ownerNPCName;
-        public string address;
-        [TextArea]
-        public string information;
+        public BoxKind boxType
+        {
+            get => packageData != null ? packageData.boxType : default;
+            set
+            {
+                EnsurePackage();
+                packageData.boxType = value;
+            }
+        }
 
-        [Header("QUALITY")]
-        [Range(0, 100)]
-        public float itemQuality = 100f;
+        public DeliveryItemData itemData
+        {
+            get => packageData != null ? packageData.itemData : null;
+            set
+            {
+                EnsurePackage();
+                packageData.itemData = value;
+                packageData.RefreshState();
+            }
+        }
 
-        [Header("DELIVERY TIME")]
-        public int remainingDays = 0;
+        public string ownerNPCName
+        {
+            get => packageData != null ? packageData.ownerNPCName : "";
+            set
+            {
+                EnsurePackage();
+                packageData.ownerNPCName = value;
+            }
+        }
 
-        [Header("STATE")]
-        public bool isDamaged;
-        public bool isBroken;
+        public string address
+        {
+            get => packageData != null ? packageData.address : "";
+            set
+            {
+                EnsurePackage();
+                packageData.address = value;
+            }
+        }
 
-        [Header("PROTECTION SNAPSHOT")]
-        [Tooltip("ตัวหารดาเมจรวมที่เซฟมาจากกล่อง + บับเบิล ตอนเก็บเข้าช่องนี้")]
-        public int protectionDivisor = 1;
+        public string information
+        {
+            get => packageData != null ? packageData.information : "";
+            set
+            {
+                EnsurePackage();
+                packageData.information = value;
+            }
+        }
 
-        [Tooltip("เปอร์เซ็นต์การเซฟดาเมจ (0–100%)")]
-        [Range(0f, 100f)]
-        public float protectionPercent = 0f;
+        public float itemQuality
+        {
+            get => packageData != null ? packageData.itemQuality : 100f;
+            set
+            {
+                EnsurePackage();
+                packageData.itemQuality = value;
+                packageData.RefreshState();
+            }
+        }
 
-        [Tooltip("กล่องนี้เป็น Waterproof (กันน้ำ100%) หรือไม่")]
-        public bool isWaterproof = false;
+        public int remainingDays
+        {
+            get => packageData != null ? packageData.remainingDays : 0;
+            set
+            {
+                EnsurePackage();
+                packageData.remainingDays = value;
+            }
+        }
+
+        public bool isDamaged
+        {
+            get => packageData != null && packageData.isDamaged;
+            set
+            {
+                EnsurePackage();
+                packageData.isDamaged = value;
+            }
+        }
+
+        public bool isBroken
+        {
+            get => packageData != null && packageData.isBroken;
+            set
+            {
+                EnsurePackage();
+                packageData.isBroken = value;
+            }
+        }
+
+        public int protectionDivisor
+        {
+            get => packageData != null ? packageData.protectionDivisor : 1;
+            set
+            {
+                EnsurePackage();
+                packageData.protectionDivisor = value;
+            }
+        }
+
+        public float protectionPercent
+        {
+            get => packageData != null ? packageData.protectionPercent : 0f;
+            set
+            {
+                EnsurePackage();
+                packageData.protectionPercent = value;
+            }
+        }
+
+        public bool isWaterproof
+        {
+            get => packageData != null && packageData.isWaterproof;
+            set
+            {
+                EnsurePackage();
+                packageData.isWaterproof = value;
+            }
+        }
+
+        void EnsurePackage()
+        {
+            if (packageData == null)
+                packageData = new PackedBoxData();
+        }
+
+        public void Clear(bool destroyShell = true)
+        {
+            if (destroyShell && storedBoxShell != null)
+                Destroy(storedBoxShell.gameObject);
+
+            storedBoxShell = null;
+            packageData = null;
+            hasBox = false;
+        }
+
+        public void SetFromPackage(PackedBoxData package)
+        {
+            packageData = package;
+            hasBox = package != null;
+            if (packageData != null)
+                packageData.RefreshState();
+        }
+
+        public void SetStoredShell(BoxCore shell)
+        {
+            storedBoxShell = shell;
+        }
+
+        public void SyncPackageState()
+        {
+            if (packageData == null) return;
+            packageData.RefreshState();
+        }
     }
 
 
@@ -79,6 +209,14 @@ public class BoxInventory : MonoBehaviour
         for (int i = 0; i < slots.Length; i++)
             if (slots[i] == null)
                 slots[i] = new BoxSlot();
+
+        storageRoot = transform.Find("StoredBoxes");
+        if (storageRoot == null)
+        {
+            GameObject root = new GameObject("StoredBoxes");
+            root.transform.SetParent(transform, false);
+            storageRoot = root.transform;
+        }
     }
 
     public BoxSlot GetSlot(int idx)
@@ -101,6 +239,7 @@ public class BoxInventory : MonoBehaviour
 
         slot.isDamaged = slot.itemQuality <= slot.itemData.damagedThreshold;
         slot.isBroken = slot.itemQuality <= slot.itemData.brokenThreshold;
+        slot.SyncPackageState();
     }
     public void AdvanceOneDay()
     {
@@ -113,6 +252,8 @@ public class BoxInventory : MonoBehaviour
 
             if (s.remainingDays < 0)
                 s.remainingDays = 0;
+
+            s.SyncPackageState();
 
             Debug.Log($"[BoxInventory] Slot {i} remainingDays = {s.remainingDays}");
         }
@@ -138,6 +279,7 @@ public class BoxInventory : MonoBehaviour
             // update state
             s.isDamaged = s.itemQuality <= s.itemData.damagedThreshold;
             s.isBroken = s.itemQuality <= s.itemData.brokenThreshold;
+            s.SyncPackageState();
 
             Debug.Log(
                 $"[ObstacleDamage] Slot {i} {s.itemData.itemName}: " +
@@ -170,6 +312,16 @@ public class BoxInventory : MonoBehaviour
         int slotIndex = FindSlotByDestination(destId);
         if (slotIndex < 0) return false;
 
+        return TryDeliverSlot(slotIndex, out reward, destroyShell: true);
+    }
+
+    public bool TryDeliverSlot(int slotIndex, out int reward, bool destroyShell = true)
+    {
+        reward = 0;
+
+        if (slotIndex < 0 || slotIndex >= slots.Length)
+            return false;
+
         var slot = slots[slotIndex];
         if (!slot.hasBox || slot.itemData == null) return false;
 
@@ -187,11 +339,9 @@ public class BoxInventory : MonoBehaviour
         reward = Mathf.Max(0, Mathf.RoundToInt(r));
 
         // ลบของจาก inventory
-        slot.hasBox = false;
-        slot.itemData = null;
-        // (slot.itemQuality ยังเก็บค่าล่าสุดไว้ได้ เผื่อ debug)
+        slot.Clear(destroyShell);
 
-        Debug.Log($"[BoxInventory] DeliverFromInventory dest={destId}, reward={reward}");
+        Debug.Log($"[BoxInventory] DeliverFromInventory slot={slotIndex}, reward={reward}");
         var hud = FindFirstObjectByType<BoxInventoryHUD>(
     FindObjectsInactive.Include
 );
@@ -219,58 +369,22 @@ public class BoxInventory : MonoBehaviour
             return false;
         }
         var slot = slots[free];
-        slot.hasBox = true;
-        slot.boxType = box.boxType;
-        slot.itemData = box.CurrentItemData;
-        slot.itemQuality = box.CurrentItemInstance.currentQuality;
-        slot.remainingDays =
-            box.CurrentItemInstance.CalculateEffectiveDeadlineDays(
-                box.CurrentItemData.deliveryLimitDays,
-                box.boxType == BoxKind.ColdBox
-            );
-
-        // 🔹 ดึงค่าการเซฟจากกล่อง (รวมกล่อง + บับเบิล)
-        int div = box.GetTotalDamageDivisor();
-        slot.protectionDivisor = div;
-
-        float p01 = box.GetProtection01();
-        slot.protectionPercent = p01 * 100f;
-
-        // 🔹 เซฟ flag กันน้ำ
-        slot.isWaterproof = box.IsWaterproof;
-        var itemInst = box.CurrentItemInstance;
-
-        // ===== SNAPSHOT EXTRA INFO =====
-
-        // 1) NPC Name (จาก NPCData)
-        if (itemInst != null && itemInst.ownerNPC != null && itemInst.ownerNPC.data != null)
+        var package = box.CreatePackedData();
+        if (package == null)
         {
-            slot.ownerNPCName = itemInst.ownerNPC.data.npcName;
+            Debug.LogWarning("[BoxInventory] StoreBox: Could not create packed data.");
+            return false;
         }
-        else
-        {
-            slot.ownerNPCName = "Unknown";
-        } 
 
-        // 2) Address (copy จาก ItemData)
-        slot.address = slot.itemData != null
-            ? slot.itemData.address
-            : "";
-
-        // 3) Information (copy จาก ItemData)
-        slot.information = slot.itemData != null
-            ? slot.itemData.information
-            : "";
-
-        // เซ็ตสถานะ
-        UpdateItemState(slot);
+        slot.SetFromPackage(package);
+        slot.SetStoredShell(box);
 
         Debug.Log($"[BoxInventory] StoreBox: slot={free}, item={slot.itemData.itemName}, " +
                   $"Q={slot.itemQuality:F1}, protectDiv={slot.protectionDivisor}, save={slot.protectionPercent:F0}%");
 
-        Destroy(box.gameObject);
+        GameManager.Instance?.RegisterNewDelivery(package);
 
-
+        box.PrepareForInventoryStorage(storageRoot);
 
         var hud = FindFirstObjectByType<BoxInventoryHUD>(
             FindObjectsInactive.Include
@@ -292,51 +406,63 @@ public class BoxInventory : MonoBehaviour
 
     }
 
-    // ---------------- เอากล่องจาก inventory ออกมาในโลก ----------------
-    //public BoxCore SpawnBoxFromSlot(int slotIndex, Transform spawnPoint)
-    //{
-    //    if (slotIndex < 0 || slotIndex >= slots.Length)
-    //    {
-    //        Debug.LogWarning($"[BoxInventory] SpawnBoxFromSlot: index {slotIndex} ไม่ถูกต้อง");
-    //        return null;
-    //    }
+    public BoxCore SpawnBoxFromSlot(int slotIndex, Transform spawnPoint, bool clearSlot = false)
+    {
+        if (slotIndex < 0 || slotIndex >= slots.Length)
+            return null;
 
-    //    var slot = slots[slotIndex];
-    //    if (!slot.hasBox || slot.itemData == null)
-    //    {
-    //        Debug.Log($"[BoxInventory] SpawnBoxFromSlot: slot {slotIndex} ว่าง");
-    //        return null;
-    //    }
+        if (spawnPoint == null)
+            return null;
 
-    //    if (!boxPrefab)
-    //    {
-    //        Debug.LogError("[BoxInventory] boxPrefab ยังไม่ได้เซ็ต");
-    //        return null;
-    //    }
+        var slot = slots[slotIndex];
+        if (!slot.hasBox || slot.packageData == null)
+            return null;
 
-    //    GameObject go = Instantiate(boxPrefab, spawnPoint.position, spawnPoint.rotation);
-    //    var core = go.GetComponent<BoxCore>();
-    //    var itemInst = go.GetComponentInChildren<DeliveryItemInstance>();
+        if (slot.storedBoxShell != null)
+        {
+            BoxCore storedShell = slot.storedBoxShell;
+            storedShell.RestoreStoredShell(slot.packageData, spawnPoint.position, spawnPoint.rotation);
 
-    //    if (!core || !itemInst)
-    //    {
-    //        Debug.LogError("[BoxInventory] prefab ไม่มี BoxCore หรือ DeliveryItemInstance");
-    //        return null;
-    //    }
+            if (clearSlot)
+            {
+                slot.SetStoredShell(null);
+                slot.Clear(destroyShell: false);
+            }
 
-    //    core.boxType = slot.boxType;
-    //    itemInst.data = slot.itemData;
-    //    itemInst.currentQuality = slot.itemQuality;
-    //    //core.SetCurrent(this);
+            return storedShell;
+        }
 
-    //    Debug.Log($"[BoxInventory] SpawnBoxFromSlot: เอา {slot.itemData.itemName} ออกจาก slot {slotIndex} ด้วย quality={slot.itemQuality:F1}");
+        GameObject prefabToSpawn = slot.packageData.boxPrefab != null
+            ? slot.packageData.boxPrefab
+            : boxPrefab;
 
-    //    slot.hasBox = false;
-    //    slot.itemData = null;
-    //    // slot.itemQuality จะยังเก็บค่าล่าสุดไว้ (ใช้ debug ได้)
+        if (prefabToSpawn == null)
+            return null;
 
-    //    return core;
-    //}
+        BoxCore box = PackedBoxRuntimeFactory.Spawn(
+            prefabToSpawn,
+            slot.packageData,
+            spawnPoint.position,
+            spawnPoint.rotation);
+
+        if (box == null && prefabToSpawn != boxPrefab && boxPrefab != null)
+        {
+            Debug.LogWarning($"[BoxInventory] Failed to spawn saved prefab '{prefabToSpawn.name}'. Falling back to default box prefab.");
+            box = PackedBoxRuntimeFactory.Spawn(
+                boxPrefab,
+                slot.packageData,
+                spawnPoint.position,
+                spawnPoint.rotation);
+        }
+
+        if (box == null)
+            return null;
+
+        if (clearSlot)
+            slot.Clear();
+
+        return box;
+    }
     public void ApplyWaterDamageToSensitive(float deltaTime)
     {
         if (deltaTime <= 0f) return;
@@ -518,6 +644,28 @@ public class BoxInventory : MonoBehaviour
                 slot.itemData = null;
             }
 
+            if (slot.hasBox && slot.itemData != null)
+            {
+                slot.SetFromPackage(new PackedBoxData
+                {
+                    boxType = slot.boxType,
+                    itemData = slot.itemData,
+                    destinationId = slot.itemData.destinationId,
+                    ownerNPCName = slot.ownerNPCName,
+                    address = slot.address,
+                    information = slot.information,
+                    itemQuality = slot.itemQuality,
+                    remainingDays = slot.remainingDays,
+                    protectionDivisor = slot.protectionDivisor,
+                    protectionPercent = slot.protectionPercent,
+                    isWaterproof = slot.isWaterproof
+                });
+            }
+            else
+            {
+                slot.Clear();
+            }
+
         }
 
         Debug.Log("[BoxInventory] Restore complete");
@@ -634,3 +782,4 @@ public class BoxInventory : MonoBehaviour
         return true;
     }
 }
+

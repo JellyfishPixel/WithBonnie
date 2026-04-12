@@ -315,29 +315,24 @@ public class CameraModeManager : MonoBehaviour
             d.look
         );
     }
+    public void SetCameraInputLocked(bool locked)
+    {
+        isUILocked = locked;
+
+        if (starterInput)
+            starterInput.look = Vector2.zero;
+    }
+
     public void SetUILock(bool lockCamera, bool showCursor)
     {
-        isUILocked = lockCamera;
-
-        // 🔒 ล็อก movement
-        var locker = player.GetComponent<PlayerMovementLocker>();
-        if (locker)
-        {
-            if (lockCamera) locker.Lock();
-            else locker.Unlock();
-        }
-
-        // 🔒 ปิด input
-        if (starterInput)
-        {
-            starterInput.enabled = !lockCamera;
-            starterInput.look = Vector2.zero;
-        }
+        SetCameraInputLocked(lockCamera);
 
         if (cinemachineInput)
             cinemachineInput.enabled = !lockCamera;
 
-        // 🖱 Cursor
+        if (starterInput)
+            starterInput.cursorLocked = !showCursor;
+
         Cursor.lockState = showCursor
             ? CursorLockMode.None
             : CursorLockMode.Locked;

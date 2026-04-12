@@ -232,6 +232,9 @@ public class PlayerInteractionSystem : MonoBehaviour
         var box = HeldObject.GetComponent<BoxCore>();
         if (!box) return false;
 
+        if (box.PreventInventoryStore)
+            return false;
+
         if (box.Step != BoxStep.Labeled)
             return false;
 
@@ -368,6 +371,77 @@ public class PlayerInteractionSystem : MonoBehaviour
         HeldObject.transform.localPosition = Vector3.zero;
         HeldObject.transform.localRotation = Quaternion.identity;
         targetLocalRot = Quaternion.identity;
+    }
+
+    public bool ForceHold(Rigidbody rb)
+    {
+        return ForceHoldAt(rb, holdPoint);
+    }
+
+    public bool ForceHoldAt(Rigidbody rb, Transform target)
+    {
+        if (rb == null || target == null)
+            return false;
+
+        if (HeldObject != null)
+            Drop();
+
+        GrabToTarget(rb, target);
+        return HeldObject == rb.gameObject;
+    }
+
+    void GrabToTarget(Rigidbody rb, Transform target)
+    {
+        AudioManager.Instance.PlaySFX(pickupSound, transform.position);
+        var box = rb.GetComponent<BoxCore>();
+        if (box && box.Step == BoxStep.Labeled)
+        {
+            BoxWorkArea.Instance.ClearCurrentBox(box);
+        }
+
+        HeldObject = rb.gameObject;
+        heldRb = rb;
+
+        heldRb.constraints = RigidbodyConstraints.None;
+
+        originalParent = HeldObject.transform.parent;
+
+        heldRb.linearVelocity = Vector3.zero;
+        heldRb.angularVelocity = Vector3.zero;
+
+        heldRb.useGravity = false;
+        heldRb.detectCollisions = false;
+        heldRb.isKinematic = true;
+
+        colStates.Clear();
+        foreach (var c in HeldObject.GetComponentsInChildren<Collider>(true))
+        {
+            colStates.Add(new ColState { col = c, enabled = c.enabled });
+            c.enabled = false;
+        }
+
+        CacheAndSetLayerRecursive(HeldObject.transform, holdLayer);
+
+        HeldObject.transform.SetParent(target, true);
+        HeldObject.transform.localPosition = Vector3.zero;
+        HeldObject.transform.localRotation = Quaternion.identity;
+        targetLocalRot = Quaternion.identity;
+    }
+
+    public GameObject DropHeldAt(Vector3 position, Quaternion rotation)
+    {
+        if (!HeldObject)
+            return null;
+
+        GameObject dropped = HeldObject;
+        Drop();
+
+        if (dropped != null)
+        {
+            dropped.transform.SetPositionAndRotation(position, rotation);
+        }
+
+        return dropped;
     }
 
     public void StoreHeldBoxToInventory()

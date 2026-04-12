@@ -21,33 +21,23 @@ public class TapeDispenser : MonoBehaviour, IInteractable
     public void Interact(PlayerInteractionSystem interactor,
                          PlayerInteractionSystem.InteractionType type)
     {
-   
         if (type != PlayerInteractionSystem.InteractionType.Primary)
             return;
-        var eco = EconomyManager.Instance;
-        if (eco != null && !eco.HasTapeUse(tapeColor))
-        {
-            Debug.Log("[TapeDispenser] No tape left.");
-            AddSalesPopupUI.ShowMessage("No tape left.\nPlease buy more tape rolls at the shop.");
-            return;
-        }
-        if (BoxWorkArea.Instance.CurrentBox == null) return;
-        var tape = BoxWorkArea.Instance.CurrentBox?.GetComponentInChildren<TapeDragScaler>();
+        var box = BoxWorkArea.Instance != null ? BoxWorkArea.Instance.CurrentBox : null;
+        if (box == null) return;
 
+        var tape = box.GetComponentInChildren<TapeDragScaler>();
 
         if (!tape)
         {
             Debug.LogWarning("[TapeDispenser] ไม่พบ TapeDragScaler");
             return;
         }
-        var box = BoxWorkArea.Instance?.CurrentBox;
-        if (!box.CheckStepOrWarn(BoxStep.Closed))
+
+        if (!BoxTapeWorkflowService.TrySelectTape(box, this, tape))
             return;
-        if (BoxWorkArea.Instance.CurrentBox.LidsClosed == true)
-        {
-            tape.SelectDispenser(this);
-            Debug.Log($"[TapeDispenser] Selected: {name}");
-        }
+
+        Debug.Log($"[TapeDispenser] Selected: {name}");
         PlayInteractSound();
     }
 
