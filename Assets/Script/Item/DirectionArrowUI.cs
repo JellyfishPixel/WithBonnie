@@ -66,7 +66,7 @@ public class DirectionArrowUI : MonoBehaviour
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 
         var bestSlot =
-            BoxInventory.Instance.GetNearestSlotInSceneFirst(currentScene, registry);
+            BoxInventory.Instance.GetPreferredQuestSlot(currentScene, registry);
 
         Transform bestTarget = null;
 

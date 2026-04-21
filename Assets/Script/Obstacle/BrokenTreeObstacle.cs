@@ -11,8 +11,9 @@ public class BrokenTreeFallLean : ObstacleBase
     bool triggered;
     bool damaged;
 
-    void Awake()
+    protected override void Awake()
     {
+        base.Awake();
         if (!tree)
             tree = transform;
     }

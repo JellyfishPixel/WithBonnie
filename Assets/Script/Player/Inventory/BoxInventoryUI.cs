@@ -55,7 +55,11 @@ public class BoxInventoryUI : MonoBehaviour
 
 
         UILockManager.Instance.PushLock(this, UILockOptions.Menu);
+        RefreshVisibleSlots();
+    }
 
+    public void RefreshVisibleSlots()
+    {
 
         var inv = BoxInventory.Instance;
         if (inv == null || slotUIs == null) return;
@@ -86,7 +90,6 @@ public class BoxInventoryUI : MonoBehaviour
             if (slotUIs[i] != null)
                 slotUIs[i].gameObject.SetActive(false);
         }
-
     }
 
 

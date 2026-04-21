@@ -128,7 +128,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4896861}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: 'Ambient Volume '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -167,7 +167,7 @@ GameObject:
   - component: {fileID: 17061431}
   - component: {fileID: 17061433}
   - component: {fileID: 17061432}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -242,7 +242,7 @@ GameObject:
   - component: {fileID: 30407843}
   - component: {fileID: 30407845}
   - component: {fileID: 30407844}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: 'Setting Text '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -378,7 +378,7 @@ GameObject:
   - component: {fileID: 39689684}
   - component: {fileID: 39689686}
   - component: {fileID: 39689685}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: WhiteBG
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -451,7 +451,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 163059076}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Music Volume
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -491,7 +491,7 @@ GameObject:
   - component: {fileID: 185876295}
   - component: {fileID: 185876294}
   - component: {fileID: 185876293}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Image (2)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -578,7 +578,7 @@ GameObject:
   - component: {fileID: 214469351}
   - component: {fileID: 214469353}
   - component: {fileID: 214469352}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: 'Audio Text '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -714,7 +714,7 @@ GameObject:
   - component: {fileID: 218788092}
   - component: {fileID: 218788094}
   - component: {fileID: 218788093}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: 'Master Text '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -851,7 +851,7 @@ GameObject:
   - component: {fileID: 313820432}
   - component: {fileID: 313820431}
   - component: {fileID: 313820430}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Image  (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -939,7 +939,7 @@ GameObject:
   - component: {fileID: 326891276}
   - component: {fileID: 326891275}
   - component: {fileID: 326891274}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Audio_BT
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1059,7 +1059,7 @@ GameObject:
   - component: {fileID: 370529117}
   - component: {fileID: 370529119}
   - component: {fileID: 370529118}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Fill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1134,7 +1134,7 @@ GameObject:
   - component: {fileID: 376333311}
   - component: {fileID: 376333313}
   - component: {fileID: 376333312}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1207,7 +1207,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 395412276}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Handle Slide Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1245,7 +1245,7 @@ GameObject:
   - component: {fileID: 437029893}
   - component: {fileID: 437029895}
   - component: {fileID: 437029894}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1319,7 +1319,7 @@ GameObject:
   m_Component:
   - component: {fileID: 518151723}
   - component: {fileID: 518151724}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: UI Slider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1409,7 +1409,7 @@ GameObject:
   m_Component:
   - component: {fileID: 548944329}
   - component: {fileID: 548944330}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Ambient Slider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1500,7 +1500,7 @@ GameObject:
   - component: {fileID: 551798044}
   - component: {fileID: 551798046}
   - component: {fileID: 551798045}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Audio
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1583,7 +1583,7 @@ GameObject:
   - component: {fileID: 580875024}
   - component: {fileID: 580875023}
   - component: {fileID: 580875026}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: LOAD GAME_BT
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1732,7 +1732,7 @@ GameObject:
   - component: {fileID: 596198235}
   - component: {fileID: 596198237}
   - component: {fileID: 596198236}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1866,7 +1866,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 666307038}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Handle Slide Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1906,7 +1906,7 @@ GameObject:
   - component: {fileID: 722591635}
   - component: {fileID: 722591634}
   - component: {fileID: 722591637}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: QUIT_BT
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2053,7 +2053,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 727199429}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Fill Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2091,7 +2091,7 @@ GameObject:
   - component: {fileID: 768741289}
   - component: {fileID: 768741291}
   - component: {fileID: 768741290}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2166,7 +2166,7 @@ GameObject:
   - component: {fileID: 815162005}
   - component: {fileID: 815162007}
   - component: {fileID: 815162006}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2243,7 +2243,7 @@ GameObject:
   - component: {fileID: 878163126}
   - component: {fileID: 878163125}
   - component: {fileID: 878163128}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: SETTING _BT
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2392,7 +2392,7 @@ GameObject:
   - component: {fileID: 939716326}
   - component: {fileID: 939716328}
   - component: {fileID: 939716327}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: 'SFX Text '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2528,7 +2528,7 @@ GameObject:
   - component: {fileID: 952836835}
   - component: {fileID: 952836836}
   - component: {fileID: 952836837}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2603,7 +2603,7 @@ GameObject:
   - component: {fileID: 1029716321}
   - component: {fileID: 1029716323}
   - component: {fileID: 1029716322}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2739,7 +2739,7 @@ GameObject:
   - component: {fileID: 1031915346}
   - component: {fileID: 1031915348}
   - component: {fileID: 1031915347}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2873,7 +2873,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1119128583}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: 'UI Volume '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3142,7 +3142,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1212609742}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Fill Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3180,7 +3180,7 @@ GameObject:
   - component: {fileID: 1223852059}
   - component: {fileID: 1223852061}
   - component: {fileID: 1223852060}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: 'Music Text '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3314,7 +3314,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1246269311}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: SFX Volume
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3353,7 +3353,7 @@ GameObject:
   - component: {fileID: 1268312668}
   - component: {fileID: 1268312670}
   - component: {fileID: 1268312669}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Image
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3428,7 +3428,7 @@ GameObject:
   - component: {fileID: 1281168198}
   - component: {fileID: 1281168200}
   - component: {fileID: 1281168199}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3505,7 +3505,7 @@ GameObject:
   - component: {fileID: 1297959662}
   - component: {fileID: 1297959661}
   - component: {fileID: 1297959664}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: NEW GAME_BT
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3654,7 +3654,7 @@ GameObject:
   - component: {fileID: 1298820600}
   - component: {fileID: 1298820602}
   - component: {fileID: 1298820601}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3727,7 +3727,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1321378505}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Handle Slide Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3763,7 +3763,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1337417347}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Handle Slide Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3802,7 +3802,7 @@ GameObject:
   - component: {fileID: 1377348133}
   - component: {fileID: 1377348132}
   - component: {fileID: 1377348131}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3907,7 +3907,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1380370736}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Fill Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3945,7 +3945,7 @@ GameObject:
   - component: {fileID: 1391043865}
   - component: {fileID: 1391043867}
   - component: {fileID: 1391043866}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: 'Ambient Text '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4081,7 +4081,7 @@ GameObject:
   - component: {fileID: 1427325865}
   - component: {fileID: 1427325867}
   - component: {fileID: 1427325866}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Logo
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4155,7 +4155,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1482950623}
   - component: {fileID: 1482950624}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Master Slider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4246,7 +4246,7 @@ GameObject:
   - component: {fileID: 1554025318}
   - component: {fileID: 1554025320}
   - component: {fileID: 1554025319}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Fill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4321,7 +4321,7 @@ GameObject:
   - component: {fileID: 1612157884}
   - component: {fileID: 1612157886}
   - component: {fileID: 1612157885}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Fill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4394,7 +4394,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1616093374}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: 'Master Volume '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4433,7 +4433,7 @@ GameObject:
   - component: {fileID: 1635018873}
   - component: {fileID: 1635018875}
   - component: {fileID: 1635018874}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Text (TMP)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4573,7 +4573,7 @@ GameObject:
   - component: {fileID: 1666248899}
   - component: {fileID: 1666248902}
   - component: {fileID: 1666248901}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Setting Canvas
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4663,7 +4663,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1666248895}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4f6e3e9f5cb81b449a1da64ff2a85dac, type: 3}
   m_Name: 
@@ -4719,7 +4719,7 @@ GameObject:
   - component: {fileID: 1708068476}
   - component: {fileID: 1708068478}
   - component: {fileID: 1708068477}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: 'Audio_BT Text '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4855,7 +4855,7 @@ GameObject:
   - component: {fileID: 1734928197}
   - component: {fileID: 1734928199}
   - component: {fileID: 1734928198}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Fill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5074,7 +5074,7 @@ GameObject:
   - component: {fileID: 1950503643}
   - component: {fileID: 1950503645}
   - component: {fileID: 1950503644}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Handle
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5151,7 +5151,7 @@ GameObject:
   - component: {fileID: 1975228190}
   - component: {fileID: 1975228189}
   - component: {fileID: 1975228192}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Arrow Back
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5299,7 +5299,7 @@ GameObject:
   - component: {fileID: 2004255329}
   - component: {fileID: 2004255331}
   - component: {fileID: 2004255330}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Fill
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5372,7 +5372,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2016829397}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Fill Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5410,7 +5410,7 @@ GameObject:
   - component: {fileID: 2023546958}
   - component: {fileID: 2023546960}
   - component: {fileID: 2023546959}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: 'Ambient Text '
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5545,7 +5545,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2026073233}
   - component: {fileID: 2026073232}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: SFX Slider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5636,7 +5636,7 @@ GameObject:
   - component: {fileID: 2067206277}
   - component: {fileID: 2067206279}
   - component: {fileID: 2067206278}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5710,7 +5710,7 @@ GameObject:
   m_Component:
   - component: {fileID: 2074351220}
   - component: {fileID: 2074351221}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Music Slider
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6246,7 +6246,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2129203748}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Handle Slide Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -6282,7 +6282,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2132183421}
-  m_Layer: 5
+  m_Layer: 0
   m_Name: Fill Area
   m_TagString: Untagged
   m_Icon: {fileID: 0}

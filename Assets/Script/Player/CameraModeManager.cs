@@ -125,8 +125,9 @@ public class CameraModeManager : MonoBehaviour
         else
         {
             CleanupAfterFirstPerson();
-            ResetTPCameraRootAndState();
             thirdPersonController.HardResetCamera();
+            ResetTPCameraRootAndState();
+            ResetThirdPersonCameraTransform();
             thirdPersonController.enabled = true;
         }
 
@@ -172,13 +173,24 @@ public class CameraModeManager : MonoBehaviour
       
         thirdPersonCameraRoot.localPosition = Vector3.zero;
 
-  
-        float playerYaw = player.transform.eulerAngles.y;
+      
         thirdPersonCameraRoot.localRotation =
             Quaternion.Euler(0f, 0f, 0f);
 
-  
-        thirdPersonController.SetLookAngles(0f, 0f);
+        // Third-person camera target is parented under the player,
+        // so "behind the player" means zero local yaw, not world yaw.
+        thirdPersonController.HardResetCamera();
+        thirdPersonController.ForceResetYaw(0f);
+    }
+
+    void ResetThirdPersonCameraTransform()
+    {
+        if (!thirdPersonCamera)
+            return;
+
+        Transform t = thirdPersonCamera.transform;
+        Vector3 localEuler = t.localEulerAngles;
+        t.localRotation = Quaternion.Euler(localEuler.x, 0f, localEuler.z);
     }
 
 
@@ -213,6 +225,7 @@ public class CameraModeManager : MonoBehaviour
         {
             CleanupAfterFirstPerson();
             ResetTPCameraRootAndState();
+            ResetThirdPersonCameraTransform();
             ResetCharacterVisual();
             thirdPersonController.enabled = true;
         }
@@ -241,6 +254,7 @@ public class CameraModeManager : MonoBehaviour
         {
             CleanupAfterFirstPerson();
             ResetTPCameraRootAndState();
+            ResetThirdPersonCameraTransform();
             thirdPersonController.enabled = true;
           
         }

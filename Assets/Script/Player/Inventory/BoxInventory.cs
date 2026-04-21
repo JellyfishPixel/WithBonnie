@@ -4,12 +4,14 @@ using UnityEngine;
 public class BoxInventory : MonoBehaviour
 {
     public static BoxInventory Instance { get; private set; }
+    public static event Action QuestPinChanged;
 
     [Header("Inventory Settings")]
     public int maxSlots = 3;
 
     [Header("Box Prefab")]
     public GameObject boxPrefab;
+    [SerializeField] int pinnedSlotIndex = -1;
 
     Transform storageRoot;
 
@@ -191,6 +193,7 @@ public class BoxInventory : MonoBehaviour
 
 
     public BoxSlot[] slots;
+    public int PinnedSlotIndex => pinnedSlotIndex;
 
     void Awake()
     {
@@ -225,6 +228,71 @@ public class BoxInventory : MonoBehaviour
         return slots[idx];
     }
 
+    public bool IsSlotPinned(int idx)
+    {
+        return pinnedSlotIndex == idx;
+    }
+
+    public bool IsSlotTracked(int idx, string currentScene, DestinationRegistry registry)
+    {
+        if (idx < 0 || idx >= slots.Length)
+            return false;
+
+        var slot = slots[idx];
+        if (slot == null || !slot.hasBox || slot.itemData == null)
+            return false;
+
+        var preferred = GetPreferredQuestSlot(currentScene, registry);
+        return preferred == slot;
+    }
+
+    public void TogglePinSlot(int idx)
+    {
+        if (pinnedSlotIndex == idx)
+            ClearPinnedSlot();
+        else
+            SetPinnedSlot(idx);
+    }
+
+    public void SetPinnedSlot(int idx)
+    {
+        if (idx < 0 || idx >= slots.Length)
+        {
+            ClearPinnedSlot();
+            return;
+        }
+
+        var slot = slots[idx];
+        if (slot == null || !slot.hasBox || slot.itemData == null)
+        {
+            ClearPinnedSlot();
+            return;
+        }
+
+        pinnedSlotIndex = idx;
+        RefreshQuestTrackingUI();
+        QuestPinChanged?.Invoke();
+    }
+
+    public void ClearPinnedSlot()
+    {
+        pinnedSlotIndex = -1;
+        RefreshQuestTrackingUI();
+        QuestPinChanged?.Invoke();
+    }
+
+    public BoxSlot GetPinnedSlot()
+    {
+        if (pinnedSlotIndex < 0 || pinnedSlotIndex >= slots.Length)
+            return null;
+
+        var slot = slots[pinnedSlotIndex];
+        if (slot == null || !slot.hasBox || slot.itemData == null)
+            return null;
+
+        return slot;
+    }
+
     int FindFirstFreeSlot()
     {
         for (int i = 0; i < slots.Length; i++)
@@ -240,6 +308,33 @@ public class BoxInventory : MonoBehaviour
         slot.isDamaged = slot.itemQuality <= slot.itemData.damagedThreshold;
         slot.isBroken = slot.itemQuality <= slot.itemData.brokenThreshold;
         slot.SyncPackageState();
+    }
+
+    void ValidatePinnedSlot()
+    {
+        if (GetPinnedSlot() != null)
+            return;
+
+        pinnedSlotIndex = -1;
+    }
+
+    void RefreshQuestTrackingUI()
+    {
+        ValidatePinnedSlot();
+
+        var hud = FindFirstObjectByType<BoxInventoryHUD>(FindObjectsInactive.Include);
+        if (hud != null)
+            hud.RefreshHUD();
+
+        var smallHud = FindFirstObjectByType<HUDNearestSlotUI>(FindObjectsInactive.Include);
+        if (smallHud != null)
+            smallHud.ShowHUDTemporarily();
+
+        var arrow = FindFirstObjectByType<DirectionArrowUI>(FindObjectsInactive.Include);
+        if (arrow != null)
+            arrow.Rebuild();
+
+        InventorySelectionController.Instance?.RefreshAll();
     }
     public void AdvanceOneDay()
     {
@@ -340,6 +435,7 @@ public class BoxInventory : MonoBehaviour
 
         // ลบของจาก inventory
         slot.Clear(destroyShell);
+        ValidatePinnedSlot();
 
         Debug.Log($"[BoxInventory] DeliverFromInventory slot={slotIndex}, reward={reward}");
         var hud = FindFirstObjectByType<BoxInventoryHUD>(
@@ -378,6 +474,7 @@ public class BoxInventory : MonoBehaviour
 
         slot.SetFromPackage(package);
         slot.SetStoredShell(box);
+        ValidatePinnedSlot();
 
         Debug.Log($"[BoxInventory] StoreBox: slot={free}, item={slot.itemData.itemName}, " +
                   $"Q={slot.itemQuality:F1}, protectDiv={slot.protectionDivisor}, save={slot.protectionPercent:F0}%");
@@ -423,11 +520,12 @@ public class BoxInventory : MonoBehaviour
             BoxCore storedShell = slot.storedBoxShell;
             storedShell.RestoreStoredShell(slot.packageData, spawnPoint.position, spawnPoint.rotation);
 
-            if (clearSlot)
-            {
-                slot.SetStoredShell(null);
-                slot.Clear(destroyShell: false);
-            }
+        if (clearSlot)
+        {
+            slot.SetStoredShell(null);
+            slot.Clear(destroyShell: false);
+            ValidatePinnedSlot();
+        }
 
             return storedShell;
         }
@@ -701,6 +799,17 @@ public class BoxInventory : MonoBehaviour
             }
         }
         return best;
+    }
+
+    public BoxSlot GetPreferredQuestSlot(string currentScene, DestinationRegistry registry)
+    {
+        ValidatePinnedSlot();
+
+        var pinned = GetPinnedSlot();
+        if (pinned != null)
+            return pinned;
+
+        return GetNearestSlotInSceneFirst(currentScene, registry);
     }
     public bool HasAnyBox()
     {

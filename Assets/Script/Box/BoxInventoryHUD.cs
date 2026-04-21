@@ -18,7 +18,7 @@ public class BoxInventoryHUD : MonoBehaviour
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 
         var slot = BoxInventory.Instance
-            .GetNearestSlotInSceneFirst(currentScene, registry);
+            .GetPreferredQuestSlot(currentScene, registry);
 
         if (slot == null)
         {
@@ -49,7 +49,7 @@ public class BoxInventoryHUD : MonoBehaviour
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 
         var slot = BoxInventory.Instance
-            .GetNearestSlotInSceneFirst(currentScene, registry);
+            .GetPreferredQuestSlot(currentScene, registry);
 
         if (slot == null)
         {

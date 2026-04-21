@@ -1,6 +1,7 @@
 ﻿using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 
 public class BoxInventorySlotUI : MonoBehaviour
@@ -38,6 +39,17 @@ public class BoxInventorySlotUI : MonoBehaviour
     public Color damagedColor = new Color(1f, 0.6f, 0f);
     public Color brokenColor = Color.red;
     public Color emptyColor = new Color(0.4f, 0.4f, 0.4f, 0.7f);
+    [Header("Quest Pin")]
+    public Button pinButton;
+    public Image pinIcon;
+    public Graphic pinButtonGraphic;
+    public TMP_Text pinButtonText;
+    public string pinnedLabel = "ONGOING";
+    public string unpinnedLabel = "NOT TRACKED";
+    public string emptyLabel = "NO QUEST";
+    public Color pinActiveColor = new Color(1f, 0.85f, 0.2f, 1f);
+    public Color pinInactiveColor = new Color(0.62f, 0.62f, 0.62f, 1f);
+    public Color pinEmptyColor = new Color(0.4f, 0.4f, 0.4f, 0.85f);
 
     public enum InventorySlotDisplayMode
     {
@@ -48,25 +60,50 @@ public class BoxInventorySlotUI : MonoBehaviour
 
     [Header("Display Mode")]
     public InventorySlotDisplayMode displayMode;
+    BoxInventory.BoxSlot boundSlot;
+    int boundIndex = -1;
 
     void Awake()
     {
+
         ApplyDisplayMode();
     }
 
+    void OnEnable()
+    {
+        BoxInventory.QuestPinChanged += HandleQuestPinChanged;
+    }
+
+    void OnDisable()
+    {
+        BoxInventory.QuestPinChanged -= HandleQuestPinChanged;
+    }
+
+
+
     public void Refresh(BoxInventory.BoxSlot slot, int index)
     {
+        boundSlot = slot;
+        boundIndex = index;
+
         ApplyDisplayMode();
 
         // ===== EMPTY =====
         if (slot == null || !slot.hasBox || slot.itemData == null)
         {
+            RefreshPinUI(slot, index);
             ShowEmpty();
             return;
         }
 
         // ===== FILLED =====
+        RefreshPinUI(slot, index);
         ShowFilled(slot);
+    }
+
+    void HandleQuestPinChanged()
+    {
+        RefreshPinUI(boundSlot, boundIndex);
     }
 
     void ShowEmpty()
@@ -194,6 +231,66 @@ public class BoxInventorySlotUI : MonoBehaviour
         if (qualityFillImage)
             qualityFillImage.color = c;
     }
+
+    void RefreshPinUI(BoxInventory.BoxSlot slot, int index)
+    {
+        bool supportsPinUI = displayMode != InventorySlotDisplayMode.HUD_Small;
+        bool hasQuest = slot != null && slot.hasBox && slot.itemData != null;
+        bool canPin = supportsPinUI &&
+                      hasQuest &&
+                      index >= 0 &&
+                      BoxInventory.Instance != null;
+
+        var registry = FindFirstObjectByType<DestinationRegistry>();
+        string currentScene = SceneManager.GetActiveScene().name;
+        bool isTracked = canPin && BoxInventory.Instance.IsSlotTracked(index, currentScene, registry);
+
+        if (pinButton != null)
+        {
+
+            pinButton.onClick.RemoveAllListeners();
+            pinButton.interactable = canPin;
+
+            if (canPin)
+            {
+                pinButton.onClick.AddListener(() =>
+                {
+                    BoxInventory.Instance.SetPinnedSlot(index);
+                });
+            }
+        }
+
+        if (pinIcon != null)
+            pinIcon.color = isTracked
+                ? pinActiveColor
+                : (hasQuest ? pinInactiveColor : pinEmptyColor);
+
+        if (pinButtonGraphic != null)
+            pinButtonGraphic.color = isTracked
+                ? pinActiveColor
+                : (hasQuest ? pinInactiveColor : pinEmptyColor);
+
+        if (pinButtonText != null)
+        {
+            if (isTracked)
+            {
+                pinButtonText.text = pinnedLabel;
+                pinButtonText.color = Color.black;
+            }
+            else if (hasQuest)
+            {
+                pinButtonText.text = unpinnedLabel;
+                pinButtonText.color = Color.white;
+            }
+            else
+            {
+                pinButtonText.text = emptyLabel;
+                pinButtonText.color = new Color(0.9f, 0.9f, 0.9f, 0.9f);
+            }
+        }
+    }
+
+
     void UpdateTimeColor(BoxInventory.BoxSlot slot)
     {
         if (!timeFillImage || slot.itemData == null)

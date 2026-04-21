@@ -25,11 +25,23 @@ public class InventorySelectionController : MonoBehaviour
         }
 
         // ---- default detail ----
-        var nearest = inv.GetNearestSlot();
-        if (nearest != null)
-            ShowDetail(nearest);
+        var registry = FindFirstObjectByType<DestinationRegistry>();
+        string currentScene = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        var preferred = inv.GetPreferredQuestSlot(currentScene, registry);
+        if (preferred != null)
+        {
+            int preferredIndex = inv.PinnedSlotIndex >= 0
+                ? inv.PinnedSlotIndex
+                : FindSlotIndex(preferred);
+
+            currentSlotIndex = preferredIndex;
+            ShowDetail(preferred);
+        }
         else
+        {
+            currentSlotIndex = -1;
             detailUI.Refresh(null, -1);
+        }
     }
 
     public void SelectSlot(int index)
@@ -58,5 +70,20 @@ public class InventorySelectionController : MonoBehaviour
             BoxInventorySlotUI.InventorySlotDisplayMode.Inventory_Detail;
 
         detailUI.Refresh(slot, currentSlotIndex);
+    }
+
+    int FindSlotIndex(BoxInventory.BoxSlot target)
+    {
+        var inv = BoxInventory.Instance;
+        if (inv == null || target == null)
+            return -1;
+
+        for (int i = 0; i < inv.SlotCount; i++)
+        {
+            if (inv.GetSlot(i) == target)
+                return i;
+        }
+
+        return -1;
     }
 }

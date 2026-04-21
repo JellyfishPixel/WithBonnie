@@ -341,6 +341,16 @@ public class EconomyManager : MonoBehaviour
         UpdateMoneyUI();
     }
 
+    public void AddTapeUses(TapeColor color, int uses)
+    {
+        if (uses <= 0) return;
+
+        int current = GetTapeUses(color);
+        SetTapeUses(color, current + uses);
+
+        SaveIfAllowed();
+    }
+
     /// <summary>
     /// ใช้เทปไป 1 ครั้ง (ถ้าไม่มีแล้วจะคืน false)
     /// </summary>
@@ -388,6 +398,15 @@ public class EconomyManager : MonoBehaviour
         int current = GetBubbleUses(type);
 
         SetBubbleUses(type, current + addUses);
+        SaveIfAllowed();
+    }
+
+    public void AddBubbleUses(BubbleType type, int uses)
+    {
+        if (uses <= 0) return;
+
+        int current = GetBubbleUses(type);
+        SetBubbleUses(type, current + uses);
         SaveIfAllowed();
     }
 
