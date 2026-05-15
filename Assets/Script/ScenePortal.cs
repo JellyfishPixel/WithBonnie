@@ -15,6 +15,8 @@ public class ScenePortal : MonoBehaviour , IInteractable
     public string playerTag = "Player";
     public CameraMode targetCameraMode;
     [SerializeField] private AudioClip interactSound;
+    [Header("Vehicles")]
+    public bool allowDrivenVehicles = true;
     bool CanUsePortal()
     {
         if (SceneTransitionManager.Instance == null)
@@ -55,5 +57,35 @@ public class ScenePortal : MonoBehaviour , IInteractable
         {
             Debug.LogError("[ScenePortal] SceneTransitionManager.Instance = null");
         }
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        TryWarpDrivenVehicle(other);
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        TryWarpDrivenVehicle(collision.collider);
+    }
+
+    void TryWarpDrivenVehicle(Collider other)
+    {
+        if (!allowDrivenVehicles || other == null)
+            return;
+
+        if (SceneTransitionManager.Instance == null ||
+            SceneTransitionManager.Instance.isTransitioning)
+            return;
+
+        var vehicle = other.GetComponentInParent<VehicleController>();
+        if (vehicle == null || !vehicle.IsDriving)
+            return;
+
+        PlayInteractSound();
+        SceneTransitionManager.Instance.WarpToScene(
+            targetSceneName,
+            targetSpawnId,
+            targetCameraMode);
     }
 }

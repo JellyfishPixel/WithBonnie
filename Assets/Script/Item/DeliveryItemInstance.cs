@@ -152,23 +152,13 @@ public class DeliveryItemInstance : MonoBehaviour, IAbandonable
     {
         if (data == null || isBroken) return;
 
-        // ปัดเป็นเมตร (จำนวนเต็ม)
-        int meters = Mathf.RoundToInt(fallHeight);
-        if (meters < data.minFallHeightMeter) return;
-
-        int perMeter = Mathf.Max(0, data.damagePerMeter);
-        int raw = perMeter * meters;
-
-        int divisor = Mathf.Max(1, damageDivisor); // อย่างน้อย 1
-        float final = (float)raw / divisor;
-        int dmg = Mathf.RoundToInt(final);
-
+        int dmg = DeliveryCalculationService.CalculateFallDamage(data, fallHeight, damageDivisor);
         if (dmg <= 0)
             return;  
 
         ApplyDamage(dmg);
 
-        Debug.Log($"[ItemInstance] {data.itemName} fallHeight≈{fallHeight:F2}m ({meters}m), perMeter={perMeter}, divisor={divisor}, dmg={dmg}, Q={currentQuality:F0}");
+        Debug.Log($"[ItemInstance] {data.itemName} fallHeight≈{fallHeight:F2}m, divisor={Mathf.Max(1, damageDivisor)}, dmg={dmg}, Q={currentQuality:F0}");
     }
 
 
@@ -176,46 +166,12 @@ public class DeliveryItemInstance : MonoBehaviour, IAbandonable
     {
         if (amount <= 0f) return;
 
-        currentQuality -= amount;
-        currentQuality = Mathf.Clamp(currentQuality, 0f, 100f);
-
-        if (data != null)
-        {
-            isDamaged = currentQuality <= data.damagedThreshold;
-            isBroken = currentQuality <= data.brokenThreshold;
-        }
-        else
-        {
-            isDamaged = currentQuality < 100f;
-            isBroken = currentQuality <= 0f;
-        }
+        currentQuality = DeliveryCalculationService.ApplyQualityDamage(currentQuality, amount);
+        DeliveryCalculationService.EvaluateQualityState(data, currentQuality, out isDamaged, out isBroken);
     }
     public int CalculateEffectiveDeadlineDays(int baseDays, bool inColdBox, bool hasIceBubble)
     {
-        if (data == null) return baseDays;
-
-        // ถ้าไม่ใช่ของที่ต้องเย็น → ใช้ baseDays ปกติ
-        if (!data.requiresCold) return baseDays;
-
-        // ===== กรณีใช้กล่องเย็นถูกต้อง =====
-        if (inColdBox)
-        {
-            // ปกติใช้ baseDays
-            int result = baseDays;
-
-            // ถ้ามี Ice bubble → เพิ่มเวลาอีก 1 วัน (ปรับได้ตามชอบ)
-            if (hasIceBubble)
-            {
-                result += 1;
-            }
-
-            return result;
-        }
-
-        // ===== ใส่กล่องธรรมดา (ผิดประเภท) =====
-        // ไม่ว่าจะมี Ice bubble หรือไม่ ก็ถือว่าผิด → ลดเหลือ 1/3
-        int reduced = baseDays / 3;
-        return Mathf.Max(1, reduced);
+        return DeliveryCalculationService.CalculateEffectiveDeadlineDays(data, baseDays, inColdBox, hasIceBubble);
     }
 
     // overload เก่า (ให้โค้ดเดิมที่เคยเรียกยังใช้ได้)
@@ -227,29 +183,13 @@ public class DeliveryItemInstance : MonoBehaviour, IAbandonable
 
     public int CalculateReward(int dayCreated, int dayDelivered, int effectiveLimitDays)
     {
-        if (data == null) return 0;
-
-        int daysUsed = Mathf.Max(0, dayDelivered - dayCreated);
-
-        // 1) เงินพื้นฐาน
-        float reward = data.baseReward;
-
-        // 2) หักตามคุณภาพปัจจุบัน (0-100 → 0.0-1.0)
-        float qualityFactor = currentQuality / 100f;
-        reward *= qualityFactor;
-
-        // 3) เช็คดีเลย์โดยใช้ effectiveLimitDays (จากระบบกล่องเย็น/ธรรมดา)
-        if (effectiveLimitDays > 0 && daysUsed > effectiveLimitDays)
-        {
-            // ตัวอย่าง: ถ้าส่งช้ากว่า deadline → ได้แค่ 50%
-            reward *= 0.5f;
-        }
-
-        // 4) ถ้าพังแล้ว → ไม่ได้อะไรเลย
-        if (isBroken)
-            reward = 0f;
-
-        return Mathf.Max(0, Mathf.RoundToInt(reward));
+        return DeliveryCalculationService.CalculateReward(
+            data,
+            currentQuality,
+            dayCreated,
+            dayDelivered,
+            effectiveLimitDays,
+            isBroken);
     }
 
     // overload เก่า เผื่อที่อื่นยังเรียกอยู่ จะใช้ deliveryLimitDays ตาม data ปกติ

@@ -65,6 +65,9 @@ public class DirectionArrowUI : MonoBehaviour
         string currentScene =
             UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
 
+        if (BoxInventory.Instance == null || GameManager.Instance == null)
+            return;
+
         var bestSlot =
             BoxInventory.Instance.GetPreferredQuestSlot(currentScene, registry);
 
@@ -75,6 +78,18 @@ public class DirectionArrowUI : MonoBehaviour
             foreach (var rec in GameManager.Instance.activeBoxes)
             {
                 if (rec.destinationId == bestSlot.itemData.destinationId)
+                {
+                    bestTarget = rec.worldTarget;
+                    break;
+                }
+            }
+        }
+
+        if (bestTarget == null)
+        {
+            foreach (var rec in GameManager.Instance.activeBoxes)
+            {
+                if (rec != null && rec.worldTarget != null)
                 {
                     bestTarget = rec.worldTarget;
                     break;
@@ -106,13 +121,16 @@ public class DirectionArrowUI : MonoBehaviour
     {
         ClearAll();
 
-        Invoke(nameof(RebuildFromGameManager), 0.1f);
+        Invoke(nameof(RebuildFromGameManager), 0.25f);
     }
 
     void RebuildFromGameManager()
     {
         if (GameManager.Instance == null) return;
 
+        GameManager.Instance.RelinkSceneSystemsAndRebuildMinimap();
+
+        ClearAll();
         foreach (var rec in GameManager.Instance.activeBoxes)
         {
             if (rec.worldTarget != null)

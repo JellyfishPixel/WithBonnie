@@ -495,7 +495,8 @@ public class BoxCore : MonoBehaviour, IAbandonable
         if (currentItemData == null || currentItemInstance == null)
             return null;
 
-        int deadlineDays = currentItemInstance.CalculateEffectiveDeadlineDays(
+        int deadlineDays = DeliveryCalculationService.CalculateEffectiveDeadlineDays(
+            currentItemData,
             currentItemData.deliveryLimitDays,
             isColdBox || boxType == BoxKind.ColdBox,
             hasIceBubble);

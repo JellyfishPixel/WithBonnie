@@ -1,7 +1,0 @@
-{
-  "name": "WithBonnie.PlayModeTests",
-  "references": [],
-  "optionalUnityReferences": ["TestAssemblies"],
-  "includePlatforms": ["Editor"],
-  "defineConstraints": ["WITHBONNIE_TESTS_DISABLED"]
-}

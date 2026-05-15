@@ -267,6 +267,8 @@ namespace StarterAssets
         public void ForceGround()
         {
             if (!_controller) return;
+            if (!_controller.enabled) return;
+            if (!gameObject.activeInHierarchy) return;
 
             // ดึงลงเบา ๆ ให้ CC รับรู้ว่าติดพื้น
             _controller.Move(Vector3.down * 0.02f);

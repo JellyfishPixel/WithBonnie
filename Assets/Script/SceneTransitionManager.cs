@@ -80,6 +80,8 @@ public class SceneTransitionManager : MonoBehaviour
         pendingCameraMode = cameraMode;
         waitingForScene = true;
 
+        VehicleController.ActiveVehicle?.PrepareForSceneTransition();
+
         if (FadeManager.Instance != null)
         {
             yield return FadeManager.Instance.FadeOut();
@@ -124,6 +126,7 @@ public class SceneTransitionManager : MonoBehaviour
             FindObjectsByType<SpawnPoint>(FindObjectsSortMode.None);
 
         bool teleported = false;
+        Transform resolvedSpawn = null;
 
         foreach (var sp in points)
         {
@@ -131,7 +134,8 @@ public class SceneTransitionManager : MonoBehaviour
             {
                 Debug.Log($"[SpawnRoutine] found spawnId = {sp.spawnId}");
 
-                TeleportInternal(sp.transform, pendingCameraMode);
+                resolvedSpawn = sp.transform;
+                TeleportInternal(resolvedSpawn, pendingCameraMode);
                 teleported = true;
                 break;
             }
@@ -140,9 +144,12 @@ public class SceneTransitionManager : MonoBehaviour
         if (!teleported && points.Length > 0)
         {
             Debug.LogWarning("[SpawnRoutine] spawnId not found, fallback to first SpawnPoint");
-            TeleportInternal(points[0].transform, pendingCameraMode);
+            resolvedSpawn = points[0].transform;
+            TeleportInternal(resolvedSpawn, pendingCameraMode);
         }
 
+        if (resolvedSpawn != null)
+            VehicleController.ActiveVehicle?.PlaceDrivenVehicleAt(resolvedSpawn);
 
         yield return null; 
         var zones = FindObjectsByType<ShopCameraZone>(FindObjectsSortMode.None);
@@ -186,6 +193,8 @@ public class SceneTransitionManager : MonoBehaviour
 
         if (cc) cc.enabled = false;
 
+        player.transform.SetParent(null, true);
+        player.transform.localScale = Vector3.one;
         player.transform.position = spawn.position;
         player.transform.rotation = spawn.rotation;
         

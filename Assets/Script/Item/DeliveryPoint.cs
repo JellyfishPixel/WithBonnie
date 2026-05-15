@@ -9,6 +9,8 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
     public bool hideConfirmUIWhenAutoSpawn = true;
     [SerializeField] string holdObjectTag = "holdobject";
     [SerializeField] string groundTag = "Ground";
+    [SerializeField] BoxInventory boxInventory;
+    [SerializeField] GameManager gameManager;
 
     BoxCore spawnedBoxForTest;
     int spawnedSlotIndex = -1;
@@ -16,6 +18,20 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
      string successMessage = "Delivery successful!!";
      string noBoxMessage = "You don't have any items for this destination.";
     [SerializeField] private AudioClip interactSound;
+
+    void Awake()
+    {
+        CacheDependencies();
+    }
+
+    void CacheDependencies()
+    {
+        if (boxInventory == null)
+            boxInventory = BoxInventory.Instance;
+
+        if (gameManager == null)
+            gameManager = GameManager.Instance;
+    }
 
     public void Interact(PlayerInteractionSystem interactor,
                          PlayerInteractionSystem.InteractionType type)
@@ -83,19 +99,21 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
         if (spawnedBoxForTest != null)
             return true;
 
-        if (BoxInventory.Instance == null)
+        CacheDependencies();
+
+        if (boxInventory == null)
             return false;
 
         Transform spawnTarget = ResolveSpawnTarget(playerCollider);
         if (spawnTarget == null)
             return false;
 
-        int slotIndex = BoxInventory.Instance.FindSlotByDestination(destinationId);
+        int slotIndex = boxInventory.FindSlotByDestination(destinationId);
         if (slotIndex < 0)
             return false;
 
         spawnedSlotIndex = slotIndex;
-        spawnedBoxForTest = BoxInventory.Instance.SpawnBoxFromSlot(
+        spawnedBoxForTest = boxInventory.SpawnBoxFromSlot(
             slotIndex,
             spawnTarget,
             clearSlot: false);
@@ -208,8 +226,10 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
         }
 
         int reward = 0;
-        bool ok = BoxInventory.Instance != null &&
-                  BoxInventory.Instance.TryDeliverSlot(spawnedSlotIndex, out reward, destroyShell: false);
+        CacheDependencies();
+
+        bool ok = boxInventory != null &&
+                  boxInventory.TryDeliverSlot(spawnedSlotIndex, out reward, destroyShell: false);
 
         if (!ok)
         {
@@ -218,12 +238,12 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
             return;
         }
 
-        if (GameManager.Instance != null)
-            GameManager.Instance.MarkDeliveredByDestination(destinationId);
+        if (gameManager != null)
+            gameManager.MarkDeliveredByDestination(destinationId);
 
-        if (reward > 0 && GameManager.Instance != null)
+        if (reward > 0 && gameManager != null)
         {
-            GameManager.Instance.AddMoney(reward);
+            gameManager.AddMoney(reward);
             AddSalesPopupUI.ShowNotice(reward, true);
         }
 
@@ -237,14 +257,16 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
 
     public void ConfirmDelivery()
     {
-        if (BoxInventory.Instance == null)
+        CacheDependencies();
+
+        if (boxInventory == null)
         {
             ShowMessage(noBoxMessage);
             return;
         }
 
         int reward;
-        bool ok = BoxInventory.Instance.TryDeliverFromInventory(destinationId, out reward);
+        bool ok = boxInventory.TryDeliverFromInventory(destinationId, out reward);
 
         if (!ok)
         {
@@ -252,16 +274,16 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
             return;
         }
 
-        if (GameManager.Instance != null)
+        if (gameManager != null)
         {
-            GameManager.Instance.MarkDeliveredByDestination(destinationId);
+            gameManager.MarkDeliveredByDestination(destinationId);
         }
 
         if (reward > 0)
         {
-            if (GameManager.Instance != null)
+            if (gameManager != null)
             {
-                GameManager.Instance.AddMoney(reward);
+                gameManager.AddMoney(reward);
 
                 // 💰 popup เงิน
                 AddSalesPopupUI.ShowNotice(reward, true);
@@ -292,9 +314,11 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
 
     public bool HasItemToDeliver()
     {
-        if (BoxInventory.Instance == null) return false;
+        CacheDependencies();
+
+        if (boxInventory == null) return false;
 
         int reward;
-        return BoxInventory.Instance.TryCheckHasItem(destinationId, out reward);
+        return boxInventory.TryCheckHasItem(destinationId, out reward);
     }
 }

@@ -335,7 +335,7 @@ public class GameManager : MonoBehaviour
         activeBoxes.Remove(rec);
     }
 
-    void RelinkSceneSystemsAndRebuildMinimap()
+    public void RelinkSceneSystemsAndRebuildMinimap()
     {
         var mini = minimap != null ? minimap : FindFirstObjectByType<MinimapController>();
 
@@ -487,22 +487,19 @@ public class GameManager : MonoBehaviour
                 quality = rec.itemInstance.currentQuality;
         }
 
-        int baseLimit = rec.data.deliveryLimitDays;
-        int effectiveLimit = rec.data.requiresCold && !usedColdBox
-            ? Mathf.Max(1, baseLimit / 3)
-            : baseLimit + (hasIceBubble && usedColdBox ? 1 : 0);
+        int effectiveLimit = DeliveryCalculationService.CalculateEffectiveDeadlineDays(
+            rec.data,
+            rec.data.deliveryLimitDays,
+            usedColdBox,
+            hasIceBubble && usedColdBox);
 
-        int dayCreated = rec.dayCreated;
-        int dayDelivered = currentDay;
-
-        int daysUsed = Mathf.Max(0, dayDelivered - dayCreated);
-        float rewardValue = rec.data.baseReward * Mathf.Clamp01(quality / 100f);
-        if (effectiveLimit > 0 && daysUsed > effectiveLimit)
-            rewardValue *= 0.5f;
-        if (quality <= rec.data.brokenThreshold)
-            rewardValue = 0f;
-
-        int reward = Mathf.Max(0, Mathf.RoundToInt(rewardValue));
+        int reward = DeliveryCalculationService.CalculateReward(
+            rec.data,
+            quality,
+            rec.dayCreated,
+            currentDay,
+            effectiveLimit,
+            quality <= rec.data.brokenThreshold);
 
         AddMoney(reward);
         if (rec.itemInstance != null && rec.itemInstance.ownerNPC != null)

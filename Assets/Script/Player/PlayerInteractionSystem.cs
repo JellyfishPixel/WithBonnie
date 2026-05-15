@@ -47,6 +47,7 @@ public class PlayerInteractionSystem : MonoBehaviour
     public KeyCode storeBoxKey = KeyCode.E;
 
     bool isMovementLocked = false;
+    VehicleController currentVehicle;
 
     // ---------- held state ----------
     public GameObject HeldObject { get; private set; }
@@ -102,7 +103,11 @@ public class PlayerInteractionSystem : MonoBehaviour
             return;
         }
 
-        if (isMovementLocked) return;
+        if (isMovementLocked)
+        {
+            HandleVehicleExitInput();
+            return;
+        }
 
         HandleInteractInput();
         HandlePickupInput();
@@ -275,8 +280,29 @@ public class PlayerInteractionSystem : MonoBehaviour
 
         target.Interact(this, interactionType);
 
+        if (target is VehicleController vehicle && vehicle.HasDriver(this))
+            currentVehicle = vehicle;
+
         var tps = GetComponent<ThirdPersonController>();
         if (tps) tps.ForceGround();
+    }
+
+    void HandleVehicleExitInput()
+    {
+        if (currentVehicle == null)
+            return;
+
+        bool exitPressed =
+            IsAnyKeyDown(primaryInteractKeys) ||
+            IsAnyKeyDown(secondaryInteractKeys) ||
+            Input.GetKeyDown(storeBoxKey) ||
+            Input.GetKeyDown(currentVehicle.enterExitKey);
+
+        if (!exitPressed)
+            return;
+
+        currentVehicle.RequestExit(this);
+        currentVehicle = null;
     }
 
 
@@ -562,6 +588,7 @@ public class PlayerInteractionSystem : MonoBehaviour
         isMovementLocked = false;
         var controller = GetComponent<CharacterController>();
         if (controller) controller.enabled = true;
+        currentVehicle = null;
     }
 
     public bool IsMovementLocked()

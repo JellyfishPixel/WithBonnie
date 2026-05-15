@@ -18,7 +18,8 @@ public class ReadmeEditor : Editor
 
     static ReadmeEditor()
     {
-        EditorApplication.delayCall += SelectReadmeAutomatically;
+        if (HasReadmeAsset())
+            EditorApplication.delayCall += SelectReadmeAutomatically;
     }
 
     static void RemoveTutorial()
@@ -90,6 +91,11 @@ public class ReadmeEditor : Editor
             Debug.Log("Couldn't find a readme");
             return null;
         }
+    }
+
+    static bool HasReadmeAsset()
+    {
+        return AssetDatabase.FindAssets("Readme t:Readme").Length == 1;
     }
 
     protected override void OnHeaderGUI()

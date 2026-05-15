@@ -12,6 +12,7 @@ public class BoxInventory : MonoBehaviour
     [Header("Box Prefab")]
     public GameObject boxPrefab;
     [SerializeField] int pinnedSlotIndex = -1;
+    [SerializeField] GameManager gameManager;
 
     Transform storageRoot;
 
@@ -222,6 +223,17 @@ public class BoxInventory : MonoBehaviour
         }
     }
 
+    GameManager GameManagerRef
+    {
+        get
+        {
+            if (gameManager == null)
+                gameManager = GameManager.Instance;
+
+            return gameManager;
+        }
+    }
+
     public BoxSlot GetSlot(int idx)
     {
         if (idx < 0 || idx >= slots.Length) return null;
@@ -305,8 +317,14 @@ public class BoxInventory : MonoBehaviour
     {
         if (slot.itemData == null) return;
 
-        slot.isDamaged = slot.itemQuality <= slot.itemData.damagedThreshold;
-        slot.isBroken = slot.itemQuality <= slot.itemData.brokenThreshold;
+        DeliveryCalculationService.EvaluateQualityState(
+            slot.itemData,
+            slot.itemQuality,
+            out bool isDamaged,
+            out bool isBroken);
+
+        slot.isDamaged = isDamaged;
+        slot.isBroken = isBroken;
         slot.SyncPackageState();
     }
 
@@ -369,12 +387,10 @@ public class BoxInventory : MonoBehaviour
             float finalDmg = rawDamage / divisor;
 
             float oldQ = s.itemQuality;
-            s.itemQuality = Mathf.Clamp(oldQ - finalDmg, 0f, 100f);
+            s.itemQuality = DeliveryCalculationService.ApplyQualityDamage(oldQ, finalDmg);
 
             // update state
-            s.isDamaged = s.itemQuality <= s.itemData.damagedThreshold;
-            s.isBroken = s.itemQuality <= s.itemData.brokenThreshold;
-            s.SyncPackageState();
+            UpdateItemState(s);
 
             Debug.Log(
                 $"[ObstacleDamage] Slot {i} {s.itemData.itemName}: " +
@@ -422,16 +438,13 @@ public class BoxInventory : MonoBehaviour
 
         var data = slot.itemData;
 
-        // ========= คำนวณค่า reward แบบง่าย =========
-        float r = data.baseReward;                     // เงินพื้นฐานจาก Data
-        float qualityFactor = Mathf.Clamp01(slot.itemQuality / 100f);
-        r *= qualityFactor;                           // คุณภาพต่ำ → เงินน้อยลง
-
-        // ถ้าคุณอยากให้ "ของพัง = 0 บาท" ง่าย ๆ:
-        if (slot.itemQuality <= 0f)
-            r = 0f;
-
-        reward = Mathf.Max(0, Mathf.RoundToInt(r));
+        reward = DeliveryCalculationService.CalculateReward(
+            data,
+            slot.itemQuality,
+            0,
+            0,
+            slot.remainingDays,
+            slot.isBroken);
 
         // ลบของจาก inventory
         slot.Clear(destroyShell);
@@ -479,7 +492,7 @@ public class BoxInventory : MonoBehaviour
         Debug.Log($"[BoxInventory] StoreBox: slot={free}, item={slot.itemData.itemName}, " +
                   $"Q={slot.itemQuality:F1}, protectDiv={slot.protectionDivisor}, save={slot.protectionPercent:F0}%");
 
-        GameManager.Instance?.RegisterNewDelivery(package);
+        GameManagerRef?.RegisterNewDelivery(package);
 
         box.PrepareForInventoryStorage(storageRoot);
 
@@ -597,7 +610,7 @@ public class BoxInventory : MonoBehaviour
             if (dmg <= 0f) dmg = 0.01f; // กันไม่ให้กลืนหายหมด
 
             float oldQ = s.itemQuality;
-            s.itemQuality = Mathf.Clamp(oldQ - dmg, 0f, 100f);
+            s.itemQuality = DeliveryCalculationService.ApplyQualityDamage(oldQ, dmg);
 
             UpdateItemState(s);
 
@@ -631,7 +644,7 @@ public class BoxInventory : MonoBehaviour
             if (dmg <= 0f) dmg = 0.1f; // กันไม่ให้ดาเมจกลายเป็น 0
 
             float oldQ = s.itemQuality;
-            s.itemQuality = Mathf.Clamp(oldQ - dmg, 0f, 100f);
+            s.itemQuality = DeliveryCalculationService.ApplyQualityDamage(oldQ, dmg);
 
             UpdateItemState(s);
 
@@ -653,20 +666,15 @@ public class BoxInventory : MonoBehaviour
             var data = s.itemData;
             if (meters < data.minFallHeightMeter) continue;
 
-            int perMeter = Mathf.Max(0, data.damagePerMeter);
-            int raw = perMeter * meters;
-
-            // 🔹 ใช้ตัวหารเดียวกับที่กล่องเซฟมา (กล่อง + บับเบิล)
-            int divisor = Mathf.Max(1, s.protectionDivisor);
-            int dmg = raw / divisor;
-            if (dmg <= 0) dmg = 1;
+            int dmg = DeliveryCalculationService.CalculateFallDamage(data, fallHeight, s.protectionDivisor);
+            if (dmg <= 0) continue;
 
             float oldQ = s.itemQuality;
-            s.itemQuality = Mathf.Clamp(oldQ - dmg, 0f, 100f);
+            s.itemQuality = DeliveryCalculationService.ApplyQualityDamage(oldQ, dmg);
             UpdateItemState(s);
 
             Debug.Log($"[BoxInventory] slot {i} {data.itemName}: fall={fallHeight:F2}m " +
-                      $"({meters}m), raw={raw}, div={divisor}, dmg={dmg}, Q {oldQ:F0}→{s.itemQuality:F0}");
+                      $"({meters}m), div={Mathf.Max(1, s.protectionDivisor)}, dmg={dmg}, Q {oldQ:F0}→{s.itemQuality:F0}");
         }
     }
 
@@ -882,11 +890,13 @@ public class BoxInventory : MonoBehaviour
         if (!slot.hasBox || slot.itemData == null) return false;
 
         // (optional) ถ้าอยาก preview reward ก็ใส่ได้
-        float r = slot.itemData.baseReward;
-        float qualityFactor = Mathf.Clamp01(slot.itemQuality / 100f);
-        r *= qualityFactor;
-
-        reward = Mathf.Max(0, Mathf.RoundToInt(r));
+        reward = DeliveryCalculationService.CalculateReward(
+            slot.itemData,
+            slot.itemQuality,
+            0,
+            0,
+            slot.remainingDays,
+            slot.isBroken);
 
         return true;
     }
