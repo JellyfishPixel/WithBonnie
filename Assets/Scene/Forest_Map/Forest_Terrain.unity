@@ -534,7 +534,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -727,7 +728,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -1042,7 +1044,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -1307,6 +1310,8 @@ MonoBehaviour:
   player: {fileID: 1303416543}
   arrowPrefab: {fileID: 371382288}
   container: {fileID: 123264482}
+  warpTarget: {fileID: 0}
+  cam: {fileID: 0}
 --- !u!224 &123264482
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1656,6 +1661,8 @@ MonoBehaviour:
   moveDuration: 0.6
   holdDuration: 0.35
   fadeDuration: 0.35
+  noticeSound: {fileID: 0}
+  messageSound: {fileID: 0}
 --- !u!114 &139865203
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1680,7 +1687,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -2306,28 +2314,6 @@ RectTransform:
   m_AnchoredPosition: {x: -5, y: 0}
   m_SizeDelta: {x: -20, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!114 &191980861
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 7b5a4738b539472faa518e606162927c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: sc.terrain.painter.runtime::sc.terrain.proceduralpainter.Curvature
-  enabled: 0
-  label: Curvature
-  blendMode: 0
-  opacity: 100
-  passIndex: 2
-  solver: 0
-  minMax: {x: 0.21666667, y: 0.26666665}
-  radius: 1
-  minFalloff: 0.682
-  maxFalloff: 0.007
 --- !u!1001 &206007940
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2728,7 +2714,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -4310,7 +4297,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -4664,6 +4652,16 @@ MonoBehaviour:
   damagedColor: {r: 1, g: 0.6, b: 0, a: 1}
   brokenColor: {r: 1, g: 0, b: 0, a: 1}
   emptyColor: {r: 0.4, g: 0.4, b: 0.4, a: 0.7}
+  pinButton: {fileID: 0}
+  pinIcon: {fileID: 0}
+  pinButtonGraphic: {fileID: 0}
+  pinButtonText: {fileID: 0}
+  pinnedLabel: ONGOING
+  unpinnedLabel: NOT TRACKED
+  emptyLabel: NO QUEST
+  pinActiveColor: {r: 1, g: 0.85, b: 0.2, a: 1}
+  pinInactiveColor: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  pinEmptyColor: {r: 0.4, g: 0.4, b: 0.4, a: 0.85}
   displayMode: 0
 --- !u!1 &398178068
 GameObject:
@@ -6637,26 +6635,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 3106519547458755612, guid: 1c5472e2a3db8814eac536923bcc35ff, type: 3}
   m_PrefabInstance: {fileID: 544134383}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &549889651
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2562637f396e4c10acd3fa9926b53a12, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: sc.terrain.painter.runtime::sc.terrain.proceduralpainter.Slope
-  enabled: 1
-  label: Slope
-  blendMode: 0
-  opacity: 100
-  passIndex: 1
-  minMax: {x: 0, y: 0}
-  minFalloff: 13.4
-  maxFalloff: 3
 --- !u!1 &553860422
 GameObject:
   m_ObjectHideFlags: 0
@@ -7400,7 +7378,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -7656,7 +7635,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -8181,7 +8161,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -8389,6 +8370,16 @@ MonoBehaviour:
   damagedColor: {r: 1, g: 0.6, b: 0, a: 1}
   brokenColor: {r: 1, g: 0, b: 0, a: 1}
   emptyColor: {r: 0.4, g: 0.4, b: 0.4, a: 0.7}
+  pinButton: {fileID: 0}
+  pinIcon: {fileID: 0}
+  pinButtonGraphic: {fileID: 0}
+  pinButtonText: {fileID: 0}
+  pinnedLabel: ONGOING
+  unpinnedLabel: NOT TRACKED
+  emptyLabel: NO QUEST
+  pinActiveColor: {r: 1, g: 0.85, b: 0.2, a: 1}
+  pinInactiveColor: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  pinEmptyColor: {r: 0.4, g: 0.4, b: 0.4, a: 0.85}
   displayMode: 0
 --- !u!224 &708035094
 RectTransform:
@@ -10031,12 +10022,12 @@ MonoBehaviour:
   - enabled: 1
     layer: {fileID: 8574412962073106934, guid: 01fdb5ede7bc71744bebfca6e00634c0, type: 2}
     modifierStack:
-    - {fileID: 549889651}
-    - {fileID: 191980861}
+    - {fileID: 0}
+    - {fileID: 0}
   - enabled: 1
     layer: {fileID: 8574412962073106934, guid: 1969c3a09bbfb164f9683bf61b1f0cc1, type: 2}
     modifierStack:
-    - {fileID: 1583158685}
+    - {fileID: 0}
   - enabled: 1
     layer: {fileID: 8574412962073106934, guid: 5b0e36acd84931c42874694d458340e4, type: 2}
     modifierStack: []
@@ -10334,7 +10325,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -11056,6 +11048,7 @@ MonoBehaviour:
   supportRichText: 1
   perCharSfx: {fileID: 0}
   sfxEveryNChars: 2
+  Focutext: {r: 0, g: 0, b: 0, a: 0}
 --- !u!1001 &943949050
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -12195,7 +12188,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -12547,18 +12541,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: '::'
   mapRect: {fileID: 123264482}
   playerIcon: {fileID: 129664932}
+  mapImageRect: {fileID: 0}
   worldMin: {fileID: 0}
   worldMax: {fileID: 0}
   minimapRoot: {fileID: 0}
   mapImage: {fileID: 0}
   mainMapSprite: {fileID: 0}
   mapSceneSprite: {fileID: 0}
+  expandScale: 3
+  tweenTime: 0.35
   playerTransform: {fileID: 1303416543}
   deliveryIconPrefab: {fileID: 1516826552}
+  dayText: {fileID: 0}
+  dayMoveOffsetY: 120
   zoom: 1.5
   minZoom: 0.5
   maxZoom: 3
   zoomSpeed: 1
+  dayTextTopPos: {x: 0, y: -50}
 --- !u!114 &1128570826
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -13875,7 +13875,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -15892,6 +15893,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::BoxInventory
   maxSlots: 3
   boxPrefab: {fileID: 2424598476976634384, guid: f5a895ec491b22c4eb76c283e60c21f4, type: 3}
+  pinnedSlotIndex: -1
+  gameManager: {fileID: 0}
   inventoryDamageDivisor: 2
   waterSensitiveDamagePerSecond: 1
   slots: []
@@ -15929,6 +15932,8 @@ MonoBehaviour:
   sphereInteractMask:
     serializedVersion: 2
     m_Bits: 4294967295
+  pickupSound: {fileID: 0}
+  dropSound: {fileID: 0}
 --- !u!114 &1303416554
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15955,6 +15960,8 @@ MonoBehaviour:
   startMode: 0
   interactionSystem: {fileID: 1303416553}
   cinemachineInput: {fileID: 0}
+  jumpDust1: {fileID: 0}
+  jumpDust2: {fileID: 0}
 --- !u!114 &1303416555
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -15993,6 +16000,13 @@ MonoBehaviour:
   WaterSpeedMultiplier: 0.4
   _animator: {fileID: 0}
   _hasAnimator: 0
+  FootstepRate: 0.5
+  JumpAudioClip: {fileID: 0}
+  JumpAudioVolume: 0.6
+  JumpFX: {fileID: 0}
+  DustFX: {fileID: 0}
+  DustMinSpeed: 0.5
+  DustMaxRate: 50
 --- !u!1 &1312791622
 GameObject:
   m_ObjectHideFlags: 0
@@ -17626,7 +17640,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -17733,27 +17748,6 @@ Transform:
   - {fileID: 1160448767}
   m_Father: {fileID: 1303416543}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1583158685
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b1d046e3917e4d8580903c69758b6558, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: sc.terrain.painter.runtime::sc.terrain.proceduralpainter.Height
-  enabled: 1
-  label: Height
-  blendMode: 0
-  opacity: 100
-  passIndex: 0
-  min: 0
-  minFalloff: 1
-  max: 2000
-  maxFalloff: 1
 --- !u!1001 &1583935536
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -18214,7 +18208,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -18565,7 +18560,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -20010,7 +20006,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -20679,7 +20676,8 @@ MonoBehaviour:
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
-  m_fontSharedMaterials: []
+  m_fontSharedMaterials:
+  - {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_fontMaterial: {fileID: 0}
   m_fontMaterials: []
   m_fontColor32:
@@ -22145,6 +22143,16 @@ MonoBehaviour:
   damagedColor: {r: 1, g: 0.6, b: 0, a: 1}
   brokenColor: {r: 1, g: 0, b: 0, a: 1}
   emptyColor: {r: 0.4, g: 0.4, b: 0.4, a: 0.7}
+  pinButton: {fileID: 0}
+  pinIcon: {fileID: 0}
+  pinButtonGraphic: {fileID: 0}
+  pinButtonText: {fileID: 0}
+  pinnedLabel: ONGOING
+  unpinnedLabel: NOT TRACKED
+  emptyLabel: NO QUEST
+  pinActiveColor: {r: 1, g: 0.85, b: 0.2, a: 1}
+  pinInactiveColor: {r: 0.62, g: 0.62, b: 0.62, a: 1}
+  pinEmptyColor: {r: 0.4, g: 0.4, b: 0.4, a: 0.85}
   displayMode: 0
 --- !u!1 &2093418298
 GameObject:

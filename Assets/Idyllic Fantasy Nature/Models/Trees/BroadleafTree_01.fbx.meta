@@ -1,46 +1,9 @@
 fileFormatVersion: 2
 guid: c622c7f70285dec418f3c2a80a5e6b1e
-AssetOrigin:
-  serializedVersion: 1
-  productId: 260042
-  packageName: Idyllic Fantasy Nature
-  packageVersion: 1.0
-  assetPath: Assets/Idyllic Fantasy Nature/Models/Trees/BroadleafTree_01.fbx
-  uploadId: 617545
 ModelImporter:
-  serializedVersion: 24200
+  serializedVersion: 21300
   internalIDToNameTable: []
-  externalObjects:
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Leaves.003
-    second: {fileID: 2100000, guid: 3ea7ad8bc3864e94480b7a7d7113285f, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Leaves.007
-    second: {fileID: 2100000, guid: cb1bcb1999289fd499df64e5157b1e12, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Leaves.008
-    second: {fileID: 2100000, guid: 493e32cda70e8f248a7be79a64e1cec5, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Trunk.007
-    second: {fileID: 2100000, guid: ce67337c967d188449423561ad26bc7d, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Trunk.010
-    second: {fileID: 2100000, guid: ebeb52d67f9eb0c4c8f2bfe5f7e3d3cc, type: 2}
-  - first:
-      type: UnityEngine:Material
-      assembly: UnityEngine.CoreModule
-      name: Trunk.013
-    second: {fileID: 2100000, guid: e3175758f331c7847ab291874c6b43e1, type: 2}
+  externalObjects: {}
   materials:
     materialImportMode: 2
     materialName: 0
@@ -53,6 +16,8 @@ ModelImporter:
     optimizeGameObjects: 0
     removeConstantScaleCurves: 1
     motionNodeName: 
+    rigImportErrors: 
+    rigImportWarnings: 
     animationImportErrors: 
     animationImportWarnings: 
     animationRetargetingWarnings: 
@@ -78,7 +43,6 @@ ModelImporter:
     addColliders: 0
     useSRGBMaterialColor: 1
     sortHierarchyByName: 1
-    importPhysicalCameras: 1
     importVisibility: 1
     importBlendShapes: 1
     importCameras: 1
@@ -96,9 +60,6 @@ ModelImporter:
     maxBonesPerVertex: 4
     minBoneWeight: 0.001
     optimizeBones: 1
-    generateMeshLods: 0
-    meshLodGenerationFlags: 0
-    maximumMeshLod: -1
     meshOptimizationFlags: -1
     indexFormat: 0
     secondaryUVAngleDistortion: 8
@@ -109,7 +70,6 @@ ModelImporter:
     secondaryUVMinObjectScale: 1
     secondaryUVPackMargin: 4
     useFileScale: 1
-    strictVertexDataChecks: 0
   tangentSpace:
     normalSmoothAngle: 60
     normalImportMode: 0
@@ -142,9 +102,15 @@ ModelImporter:
   humanoidOversampling: 1
   avatarSetup: 0
   addHumanoidExtraRootOnlyWhenUsingAvatar: 1
-  importBlendShapeDeformPercent: 0
   remapMaterialsIfMaterialImportModeIsNone: 0
   additionalBone: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 260042
+  packageName: Idyllic Fantasy Nature
+  packageVersion: 1.0
+  assetPath: Assets/Idyllic Fantasy Nature/Models/Trees/BroadleafTree_01.fbx
+  uploadId: 617545

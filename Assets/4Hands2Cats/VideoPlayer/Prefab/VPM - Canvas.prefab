@@ -1146,6 +1146,9 @@ MonoBehaviour:
   muteImage: {fileID: 5155630913457093597}
   muteSprite: {fileID: 21300000, guid: 467889d422005a041bfa79fcd1fde375, type: 3}
   unmuteSprite: {fileID: 21300000, guid: fab32c9ebfaa10d45bdf3baec2016370, type: 3}
+  playPauseImage: {fileID: 0}
+  playSprite: {fileID: 0}
+  pauseSprite: {fileID: 0}
 --- !u!223 &655903837834085779
 Canvas:
   m_ObjectHideFlags: 0
