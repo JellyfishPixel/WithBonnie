@@ -19,8 +19,6 @@
     "com.unity.postprocessing": "3.5.0",
     "com.unity.probuilder": "6.0.9",
     "com.unity.render-pipelines.core": "17.2.0",
-    "com.unity.render-pipelines.high-definition": "17.2.0",
-    "com.unity.render-pipelines.high-definition-config": "17.2.0",
     "com.unity.render-pipelines.universal": "17.2.0",
     "com.unity.render-pipelines.universal-config": "17.0.3",
     "com.unity.rendering.light-transport": "1.0.1",

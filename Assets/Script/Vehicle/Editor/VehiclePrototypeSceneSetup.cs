@@ -3,17 +3,10 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-[InitializeOnLoad]
 public static class VehiclePrototypeSceneSetup
 {
     const string MainScenePath = "Assets/Scene/Main.unity";
     const string RootName = "Vehicle Prototype Test Objects";
-
-    static VehiclePrototypeSceneSetup()
-    {
-        EditorApplication.delayCall += EnsureInMainSceneIfOpen;
-        EditorSceneManager.sceneOpened += OnSceneOpened;
-    }
 
     [MenuItem("Tools/WithBonnie/Vehicles/Create Prototype Vehicles In Current Scene")]
     public static void CreatePrototypeVehiclesInCurrentScene()
@@ -28,25 +21,6 @@ public static class VehiclePrototypeSceneSetup
         Scene scene = EditorSceneManager.OpenScene(MainScenePath, OpenSceneMode.Single);
         EnsurePrototypeVehicles(scene, markDirty: true);
         EditorSceneManager.SaveScene(scene);
-    }
-
-    static void OnSceneOpened(Scene scene, OpenSceneMode mode)
-    {
-        if (scene.path == MainScenePath)
-        {
-            EnsurePrototypeVehicles(scene, markDirty: true);
-            EditorSceneManager.SaveScene(scene);
-        }
-    }
-
-    static void EnsureInMainSceneIfOpen()
-    {
-        Scene scene = SceneManager.GetActiveScene();
-        if (scene.path == MainScenePath)
-        {
-            EnsurePrototypeVehicles(scene, markDirty: true);
-            EditorSceneManager.SaveScene(scene);
-        }
     }
 
     static void EnsurePrototypeVehicles(Scene scene, bool markDirty)

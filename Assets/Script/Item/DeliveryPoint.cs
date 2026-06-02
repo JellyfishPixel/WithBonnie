@@ -36,12 +36,59 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
     public void Interact(PlayerInteractionSystem interactor,
                          PlayerInteractionSystem.InteractionType type)
     {
+        if (interactor == null)
+            return;
+
+        if (type != PlayerInteractionSystem.InteractionType.Primary &&
+            type != PlayerInteractionSystem.InteractionType.Secondary)
+            return;
+
+        if (spawnedBoxForTest != null)
+        {
+            if (interactor.HeldObject == spawnedBoxForTest.gameObject)
+            {
+                PlaceHeldBoxForDelivery(interactor);
+                return;
+            }
+
+            Rigidbody rb = spawnedBoxForTest.GetComponent<Rigidbody>();
+            if (rb != null && interactor.ForceHold(rb))
+                AddSalesPopupUI.ShowSticky("Press E to deliver.");
+
+            return;
+        }
+
+        if (TryDeliverHeldBox(interactor))
+            return;
+
+        if (interactor.HeldObject != null)
+        {
+            ShowMessage(noBoxMessage);
+            return;
+        }
+
+        if (autoSpawnBoxOnEnter && TryAutoSpawnBoxFromInventory(ResolvePlayerCollider(interactor)))
+            return;
+
+        bool hasItem = HasItemToDeliver();
+        if (!hasItem)
+        {
+            DeliveryConfirmUI.Instance?.ForceHide();
+            ShowMessage(noBoxMessage);
+            return;
+        }
+
+        if (DeliveryConfirmUI.Instance != null)
+            DeliveryConfirmUI.Instance.Show(this, true);
+        else
+            ConfirmDelivery();
 
     }
 
     private void OnTriggerEnter(Collider other)
     {
-        if (!other.CompareTag("Player"))
+        PlayerInteractionSystem interaction = GetInteractionFrom(other);
+        if (interaction == null)
             return;
 
         if (autoSpawnBoxOnEnter && TryAutoSpawnBoxFromInventory(other))
@@ -66,7 +113,7 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
 
     private void OnTriggerExit(Collider other)
     {
-        if (!other.CompareTag("Player"))
+        if (GetInteractionFrom(other) == null)
             return;
 
         DeliveryConfirmUI.Instance?.ForceHide();
@@ -75,14 +122,18 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
 
     private void OnTriggerStay(Collider other)
     {
-        if (!other.CompareTag("Player"))
+        PlayerInteractionSystem interaction = GetInteractionFrom(other);
+        if (interaction == null)
             return;
+
+        if (Input.GetKeyDown(interaction.storeBoxKey) &&
+            spawnedBoxForTest == null &&
+            TryDeliverHeldBox(interaction))
+        {
+            return;
+        }
 
         if (spawnedBoxForTest == null)
-            return;
-
-        PlayerInteractionSystem interaction = other.GetComponentInParent<PlayerInteractionSystem>();
-        if (interaction == null)
             return;
 
         if (interaction.HeldObject != spawnedBoxForTest.gameObject)
@@ -92,6 +143,94 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
         {
             PlaceHeldBoxForDelivery(interaction);
         }
+    }
+
+    PlayerInteractionSystem GetInteractionFrom(Collider other)
+    {
+        if (other == null)
+            return null;
+
+        return other.GetComponentInParent<PlayerInteractionSystem>();
+    }
+
+    Collider ResolvePlayerCollider(PlayerInteractionSystem interaction)
+    {
+        if (interaction == null)
+            return null;
+
+        Collider playerCollider = interaction.GetComponent<Collider>();
+        if (playerCollider != null)
+            return playerCollider;
+
+        return interaction.GetComponentInChildren<Collider>();
+    }
+
+    bool TryDeliverHeldBox(PlayerInteractionSystem interaction)
+    {
+        if (interaction == null || interaction.HeldObject == null)
+            return false;
+
+        BoxCore heldBox = interaction.HeldObject.GetComponent<BoxCore>();
+        if (heldBox == null)
+            return false;
+
+        DeliveryItemData itemData = heldBox.CurrentItemData;
+        if (itemData == null || itemData.destinationId != destinationId)
+            return false;
+
+        if (heldBox.Step != BoxStep.Labeled)
+        {
+            heldBox.CheckStepOrWarn(BoxStep.Labeled);
+            return true;
+        }
+
+        Vector3 placePosition = (autoSpawnPoint != null ? autoSpawnPoint.position : transform.position) + Vector3.up * 0.15f;
+        Quaternion placeRotation = autoSpawnPoint != null ? autoSpawnPoint.rotation : transform.rotation;
+        GameObject dropped = interaction.DropHeldAt(placePosition, placeRotation);
+        if (dropped == null)
+            return true;
+
+        BoxCore deliveredBox = dropped.GetComponent<BoxCore>();
+        if (deliveredBox == null)
+            return true;
+
+        float quality = deliveredBox.CurrentItemInstance != null
+            ? deliveredBox.CurrentItemInstance.currentQuality
+            : itemData.baseQuality;
+
+        int effectiveLimit = DeliveryCalculationService.CalculateEffectiveDeadlineDays(
+            itemData,
+            itemData.deliveryLimitDays,
+            deliveredBox.boxType == BoxKind.ColdBox,
+            deliveredBox.hasIceBubble && deliveredBox.boxType == BoxKind.ColdBox);
+
+        int reward = DeliveryCalculationService.CalculateReward(
+            itemData,
+            quality,
+            0,
+            0,
+            effectiveLimit,
+            quality <= itemData.brokenThreshold);
+
+        deliveredBox.MarkDelivered();
+
+        CacheDependencies();
+
+        if (gameManager != null)
+        {
+            gameManager.AddMoney(reward);
+            gameManager.MarkDeliveredByDestination(destinationId);
+        }
+
+        if (reward > 0)
+            AddSalesPopupUI.ShowNotice(reward, true);
+
+        ShowMessage(successMessage);
+        PlayInteractSound();
+        AddSalesPopupUI.HideSticky();
+
+        Destroy(deliveredBox.gameObject);
+        return true;
     }
 
     bool TryAutoSpawnBoxFromInventory(Collider playerCollider)
