@@ -77,7 +77,7 @@ public class DirectionArrowUI : MonoBehaviour
         {
             foreach (var rec in GameManager.Instance.activeBoxes)
             {
-                if (rec.destinationId == bestSlot.itemData.destinationId)
+                if (DeliveryDestinationId.Matches(rec.destinationId, bestSlot.itemData.destinationId))
                 {
                     bestTarget = rec.worldTarget;
                     break;

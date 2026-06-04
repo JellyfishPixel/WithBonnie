@@ -58,6 +58,51 @@ public class CameraModeManager : MonoBehaviour
         if (jumpDust2)
             jumpDust2.SetActive(enableDust);
     }
+
+    void EnsureReferences()
+    {
+        if (!player)
+            player = GameObject.FindGameObjectWithTag("Player");
+
+        if (!player)
+            return;
+
+        if (!thirdPersonController)
+            thirdPersonController = player.GetComponent<ThirdPersonController>();
+
+        if (!firstPersonController)
+            firstPersonController = player.GetComponent<FirstPersonController>();
+
+        if (!starterInput)
+            starterInput = player.GetComponent<StarterAssetsInputs>();
+
+        if (!interactionSystem)
+            interactionSystem = player.GetComponent<PlayerInteractionSystem>();
+
+        if (!cinemachineBrain && Camera.main)
+            cinemachineBrain = Camera.main.GetComponent<CinemachineBrain>();
+    }
+
+    void ConfigureCinemachineBrain()
+    {
+        if (!cinemachineBrain)
+            return;
+
+        cinemachineBrain.UpdateMethod = CinemachineBrain.UpdateMethods.LateUpdate;
+        cinemachineBrain.BlendUpdateMethod = CinemachineBrain.BrainUpdateMethods.LateUpdate;
+    }
+
+    void CopyFirstPersonSettingsToMotor()
+    {
+        if (!firstPersonController || !thirdPersonController)
+            return;
+
+        thirdPersonController.FirstPersonMoveSpeed = firstPersonController.MoveSpeed;
+        thirdPersonController.FirstPersonSprintSpeed = firstPersonController.SprintSpeed;
+        thirdPersonController.FirstPersonRotationSpeed = firstPersonController.RotationSpeed;
+        thirdPersonController.FirstPersonTopClamp = firstPersonController.TopClamp;
+        thirdPersonController.FirstPersonBottomClamp = firstPersonController.BottomClamp;
+    }
     void Awake()
     {
         if (Instance != null)
@@ -72,6 +117,9 @@ public class CameraModeManager : MonoBehaviour
 
     void Start()
     {
+        EnsureReferences();
+        ConfigureCinemachineBrain();
+
         if (SaveManager.Instance != null &&
             SaveManager.Instance.IsLoading) // ⭐ เพิ่ม flag
             return;
@@ -86,52 +134,71 @@ public class CameraModeManager : MonoBehaviour
 
     public void SetMode(CameraMode mode)
     {
-        if (CurrentMode == mode) return;
+        EnsureReferences();
+        ConfigureCinemachineBrain();
 
-        // ===== ปิดทุกอย่างก่อน (กัน frame ค้าง) =====
-        firstPersonController.enabled = false;
-        thirdPersonController.enabled = false;
+        if (CurrentMode == mode &&
+            thirdPersonController &&
+            thirdPersonController.PerspectiveMode == mode)
+        {
+            return;
+        }
+
         ResetInput();
 
         // ===== สลับกล้อง =====
         bool isFP = mode == CameraMode.FirstPerson;
-        firstPersonCamera.gameObject.SetActive(isFP);
-        thirdPersonCamera.gameObject.SetActive(!isFP);
+        if (firstPersonCamera)
+            firstPersonCamera.gameObject.SetActive(isFP);
+
+        if (thirdPersonCamera)
+            thirdPersonCamera.gameObject.SetActive(!isFP);
 
         // ===== Visual =====
-        characterVisual.SetActive(!isFP);
-        InteractPoint.SetActive(isFP);
+        if (characterVisual)
+            characterVisual.SetActive(!isFP);
+
+        if (InteractPoint)
+            InteractPoint.SetActive(isFP);
+
         if (interactionSystem)
         {
             if (isFP)
             {
-                interactionSystem.SetCurrentCamera(firstPersonCamera);
+                if (firstPersonCamera)
+                    interactionSystem.SetCurrentCamera(firstPersonCamera);
+
                 interactionSystem.interactRayMode = InteractRayMode.Camera;
             }
             else
             {
-                interactionSystem.SetCurrentCamera(thirdPersonCamera);
+                if (thirdPersonCamera)
+                    interactionSystem.SetCurrentCamera(thirdPersonCamera);
+
                 interactionSystem.interactRayMode = InteractRayMode.Player;
             }
         }
 
-        // ===== เปิด Controller ที่ถูกต้อง =====
-        if (isFP)
+        ResetFPCameraRoot();
+        ResetTPCameraRootAndState();
+        CopyFirstPersonSettingsToMotor();
+
+        // ใช้ ThirdPersonController เป็น motor ตัวเดียว และปิด FirstPersonController ไว้เสมอ
+        if (firstPersonController)
+            firstPersonController.enabled = false;
+
+        if (thirdPersonController)
         {
-            ResetFPCameraRoot();
-            ResetCharacterController();
-            firstPersonController.enabled = true;
-        }
-        else
-        {
-            CleanupAfterFirstPerson();
-            thirdPersonController.HardResetCamera();
-            ResetTPCameraRootAndState();
-            ResetThirdPersonCameraTransform();
             thirdPersonController.enabled = true;
+            thirdPersonController.SetPerspectiveMode(mode, firstPersonCameraRoot);
         }
 
         CurrentMode = mode;
+
+        if (!isFP)
+            ResetThirdPersonOrbit();
+
+        ResetCharacterController();
         ResetCharacterVisual();
         UpdateDustState(mode);
         Debug.Log($"[CameraMode] {mode}");
@@ -164,23 +231,32 @@ public class CameraModeManager : MonoBehaviour
     {
         if (!thirdPersonCameraRoot || !player) return;
 
-    
-        thirdPersonController.enabled = false;
-
         if (thirdPersonCameraRoot.parent != player.transform)
             thirdPersonCameraRoot.SetParent(player.transform, false);
 
-      
         thirdPersonCameraRoot.localPosition = Vector3.zero;
 
-      
-        thirdPersonCameraRoot.localRotation =
-            Quaternion.Euler(0f, 0f, 0f);
+        // ThirdPersonController now owns the target yaw. Keep only the rig anchor clean here.
+        thirdPersonCameraRoot.localRotation = Quaternion.identity;
+    }
 
-        // Third-person camera target is parented under the player,
-        // so "behind the player" means zero local yaw, not world yaw.
-        thirdPersonController.HardResetCamera();
-        thirdPersonController.ForceResetYaw(0f);
+    void ResetThirdPersonOrbit()
+    {
+        if (!thirdPersonCamera)
+            return;
+
+        var orbital = thirdPersonCamera.GetComponent<CinemachineOrbitalFollow>();
+        if (orbital)
+        {
+            // 0 degrees is the back of the tracked target for CinemachineOrbitalFollow.
+            orbital.HorizontalAxis.Value = 0f;
+            orbital.VerticalAxis.Value = orbital.VerticalAxis.Center;
+            orbital.RadialAxis.Value = orbital.RadialAxis.Center;
+        }
+
+        var cinemachineCamera = thirdPersonCamera.GetComponent<CinemachineCamera>();
+        if (cinemachineCamera)
+            cinemachineCamera.PreviousStateIsValid = false;
     }
 
     void ResetThirdPersonCameraTransform()
@@ -196,6 +272,8 @@ public class CameraModeManager : MonoBehaviour
 
     void ResetCharacterController()
     {
+        if (!player) return;
+
         var cc = player.GetComponent<CharacterController>();
         if (!cc) return;
 
@@ -214,57 +292,55 @@ public class CameraModeManager : MonoBehaviour
     public void ResetActiveControllerOneFrame()
     {
         StartCoroutine(ResetControllerRoutine());
-        if (CurrentMode == CameraMode.FirstPerson)
-        {
-            ResetFPCameraRoot();
-            ResetCharacterController();
-            ResetCharacterVisual();
-            firstPersonController.enabled = true;
-        }
-        else
-        {
-            CleanupAfterFirstPerson();
-            ResetTPCameraRootAndState();
-            ResetThirdPersonCameraTransform();
-            ResetCharacterVisual();
-            thirdPersonController.enabled = true;
-        }
-
-
     }
 
     private IEnumerator ResetControllerRoutine()
     {
-        // ปิดทุก controller ก่อน (ปลอดภัย)
-        firstPersonController.enabled = false;
-        thirdPersonController.enabled = false;
-
+        EnsureReferences();
         ResetInput();
+        ResetCameraRigForCurrentMode();
+        ResetCharacterController();
+        ResetCharacterVisual();
+        ApplyModeToController();
 
         yield return null; // ⏸ 1 frame
 
-        // เปิดเฉพาะ controller ที่ตรงกับ mode
-        if (CurrentMode == CameraMode.FirstPerson)
-        {
-            ResetFPCameraRoot();
-            ResetCharacterController();
-            firstPersonController.enabled = true;
-        }
-        else
-        {
-            CleanupAfterFirstPerson();
-            ResetTPCameraRootAndState();
-            ResetThirdPersonCameraTransform();
-            thirdPersonController.enabled = true;
-          
-        }
+        ResetInput();
+        ResetCameraRigForCurrentMode();
+        ApplyModeToController();
+    }
 
+    void ResetCameraRigForCurrentMode()
+    {
+        ResetFPCameraRoot();
+        ResetTPCameraRootAndState();
+
+        if (CurrentMode == CameraMode.ThirdPerson)
+            CleanupAfterFirstPerson();
+    }
+
+    void ApplyModeToController()
+    {
+        if (firstPersonController)
+            firstPersonController.enabled = false;
+
+        if (!thirdPersonController)
+            return;
+
+        CopyFirstPersonSettingsToMotor();
+        thirdPersonController.enabled = true;
+        thirdPersonController.SetPerspectiveMode(CurrentMode, firstPersonCameraRoot);
+
+        if (CurrentMode == CameraMode.ThirdPerson)
+            ResetThirdPersonOrbit();
     }
     public void ApplyRotation(
         Vector3? playerEuler,
         Vector2? cameraLook)
     {
-        if (playerEuler.HasValue)
+        EnsureReferences();
+
+        if (playerEuler.HasValue && player)
         {
             player.transform.rotation =
                 Quaternion.Euler(0, playerEuler.Value.y, 0);
@@ -274,16 +350,27 @@ public class CameraModeManager : MonoBehaviour
         {
             SetCameraLook(cameraLook.Value);
         }
+        else if (thirdPersonController && player)
+        {
+            float pitch = CurrentMode == CameraMode.FirstPerson
+                ? thirdPersonController.GetLookAngles().y
+                : 0f;
+
+            thirdPersonController.SetLookAngles(pitch, player.transform.eulerAngles.y);
+        }
+
+        if (CurrentMode == CameraMode.ThirdPerson)
+            ResetThirdPersonOrbit();
     }
 
     void CleanupAfterFirstPerson()
     {
-        if (!firstPersonCameraRoot) return;
+        if (!firstPersonCameraRoot || !player) return;
 
-        // ถอด parent เพื่อกัน offset ค้าง
-        firstPersonCameraRoot.SetParent(null);
+        if (firstPersonCameraRoot.parent != player.transform)
+            firstPersonCameraRoot.SetParent(player.transform, false);
 
-        firstPersonCameraRoot.localPosition = Vector3.zero;
+        firstPersonCameraRoot.localPosition = new Vector3(0, 1.2f, 0);
         firstPersonCameraRoot.localRotation = Quaternion.identity;
     }
 
@@ -291,13 +378,15 @@ public class CameraModeManager : MonoBehaviour
 
     void SetCameraLook(Vector2 look)
     {
-        if (CurrentMode == CameraMode.FirstPerson)
-        {
-            firstPersonController.SetLookAngles(
-                look.y, // pitch
-                look.x  // yaw
-            );
-        }
+        if (!thirdPersonController) return;
+
+        thirdPersonController.SetLookAngles(
+            look.y, // pitch
+            look.x  // yaw
+        );
+
+        if (CurrentMode == CameraMode.ThirdPerson)
+            ResetThirdPersonOrbit();
     }
 
     void ResetCharacterVisual()
@@ -313,11 +402,13 @@ public class CameraModeManager : MonoBehaviour
     }
     public CameraSaveData Capture()
     {
+        EnsureReferences();
+
         return new CameraSaveData
         {
             mode = CurrentMode,
-            playerYaw = player.transform.eulerAngles.y,
-            look = starterInput.look
+            playerYaw = player ? player.transform.eulerAngles.y : 0f,
+            look = thirdPersonController ? thirdPersonController.GetLookAngles() : Vector2.zero
         };
     }
 
@@ -360,17 +451,11 @@ public class CameraModeManager : MonoBehaviour
         if (starterInput)
             starterInput.look = Vector2.zero;
 
-        if (CurrentMode == CameraMode.ThirdPerson && thirdPersonCameraRoot)
+        if (characterVisual && player)
         {
-            Vector3 euler = thirdPersonCameraRoot.localEulerAngles;
-            thirdPersonCameraRoot.localRotation =
-                Quaternion.Euler(0f, euler.y, 0f);
+            characterVisual.transform.localPosition = Vector3.zero;
+            characterVisual.transform.localRotation = Quaternion.identity;
         }
-         if (characterVisual && player)
-    {
-        characterVisual.transform.localPosition = Vector3.zero;
-        characterVisual.transform.localRotation = Quaternion.identity;
-    }
     }
     //void HardResetThirdPersonCamera()
     //{

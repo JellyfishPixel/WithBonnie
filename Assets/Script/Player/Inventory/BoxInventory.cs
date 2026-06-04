@@ -409,7 +409,7 @@ public class BoxInventory : MonoBehaviour
             if (!s.hasBox || s.itemData == null) continue;
 
             // สมมติว่าใน DeliveryItemData มี field ชื่อ destinationId
-            if (s.itemData.destinationId == destId)
+            if (DeliveryDestinationId.Matches(s.itemData.destinationId, destId))
                 return i;
         }
 
@@ -786,7 +786,7 @@ public class BoxInventory : MonoBehaviour
             var s = slots[i];
             if (!s.hasBox || s.itemData == null) continue;
 
-            if (s.itemData.destinationId == destinationId)
+            if (DeliveryDestinationId.Matches(s.itemData.destinationId, destinationId))
                 return i;
         }
         return -1;

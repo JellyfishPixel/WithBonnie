@@ -75,6 +75,15 @@ namespace StarterAssets
         [Tooltip("For locking the camera position on all axis")]
         public bool LockCameraPosition = false;
 
+        [Header("Perspective")]
+        public CameraMode PerspectiveMode { get; private set; } = CameraMode.ThirdPerson;
+        public Transform FirstPersonCameraTarget;
+        public float FirstPersonMoveSpeed = 4.0f;
+        public float FirstPersonSprintSpeed = 6.0f;
+        public float FirstPersonRotationSpeed = 1.0f;
+        public float FirstPersonTopClamp = 90.0f;
+        public float FirstPersonBottomClamp = -90.0f;
+
         [Header("Water Slow")]
         [Tooltip("Tag ของน้ำในฉาก (Collider ที่เป็นน้ำ)")]
         public string WaterTag = "Water";
@@ -152,14 +161,8 @@ namespace StarterAssets
 
         void OnEnable()
         {
-
-            _cinemachineTargetYaw = 0f;
-            _cinemachineTargetPitch = 0f;
-
-            if (CinemachineCameraTarget != null)
-            {
-                CinemachineCameraTarget.transform.localRotation = Quaternion.identity;
-            }
+            _cinemachineTargetYaw = transform.eulerAngles.y;
+            ApplyCameraTargetRotation();
         }
         private void OnDisable()
         {
@@ -167,13 +170,10 @@ namespace StarterAssets
         }
         public void HardResetCamera()
         {
-            _cinemachineTargetYaw = 0f;
+            _cinemachineTargetYaw = transform.eulerAngles.y;
             _cinemachineTargetPitch = 0f;
 
-            if (CinemachineCameraTarget != null)
-            {
-                CinemachineCameraTarget.transform.localRotation = Quaternion.identity;
-            }
+            ApplyCameraTargetRotation();
         }
         private void Awake()
         {
@@ -183,15 +183,16 @@ namespace StarterAssets
                 _mainCamera = GameObject.FindGameObjectWithTag("MainCamera");
             }
 
-            _animator = GetComponent<Animator>();
+            RefreshAnimator();
         }
 
         private void Start()
         {
-            _cinemachineTargetYaw = CinemachineCameraTarget.transform.rotation.eulerAngles.y;
+            _cinemachineTargetYaw = CinemachineCameraTarget != null
+                ? CinemachineCameraTarget.transform.rotation.eulerAngles.y
+                : transform.eulerAngles.y;
 
-            _animator = GetComponentInChildren<Animator>();
-            _hasAnimator = _animator != null;
+            RefreshAnimator();
 
             _controller = GetComponent<CharacterController>();
             _input = GetComponent<StarterAssetsInputs>();
@@ -207,8 +208,7 @@ namespace StarterAssets
             _jumpTimeoutDelta = JumpTimeout;
             _fallTimeoutDelta = FallTimeout;
 
-            _animator = GetComponentInChildren<Animator>();
-            _hasAnimator = _animator != null;
+            RefreshAnimator();
 
         }
 
@@ -241,9 +241,49 @@ namespace StarterAssets
         public void SetLookAngles(float pitch, float yaw)
         {
             _cinemachineTargetPitch = pitch;
+            _cinemachineTargetYaw = yaw;
             _rotationVelocity = 0f;
 
             transform.rotation = Quaternion.Euler(0, yaw, 0);
+            ApplyCameraTargetRotation();
+        }
+
+        public Vector2 GetLookAngles()
+        {
+            return new Vector2(_cinemachineTargetYaw, _cinemachineTargetPitch);
+        }
+
+        public void SetFirstPersonCameraTarget(Transform target)
+        {
+            FirstPersonCameraTarget = target;
+            ApplyCameraTargetRotation();
+        }
+
+        public void SetPerspectiveMode(CameraMode mode, Transform firstPersonTarget = null)
+        {
+            PerspectiveMode = mode;
+
+            RefreshAnimator();
+
+            if (firstPersonTarget != null)
+                FirstPersonCameraTarget = firstPersonTarget;
+
+            _speed = 0f;
+            _animationBlend = 0f;
+            _rotationVelocity = 0f;
+            _targetRotation = transform.eulerAngles.y;
+            _cinemachineTargetYaw = transform.eulerAngles.y;
+
+            if (mode == CameraMode.ThirdPerson)
+                _cinemachineTargetPitch = 0f;
+
+            ApplyCameraTargetRotation();
+        }
+
+        void RefreshAnimator()
+        {
+            _animator = GetComponentInChildren<Animator>(true);
+            _hasAnimator = _animator != null;
         }
 
         public void LockMovement()
@@ -324,6 +364,12 @@ namespace StarterAssets
 
         private void CameraRotation()
         {
+            if (PerspectiveMode == CameraMode.FirstPerson)
+            {
+                FirstPersonCameraRotation();
+                return;
+            }
+
             // if there is an input and camera position is not fixed
             if (_input.look.sqrMagnitude >= _threshold && !LockCameraPosition)
             {
@@ -339,8 +385,50 @@ namespace StarterAssets
             _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, BottomClamp, TopClamp);
 
             // Cinemachine will follow this target
-            CinemachineCameraTarget.transform.rotation = Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride,
-                _cinemachineTargetYaw, 0.0f);
+            ApplyCameraTargetRotation();
+        }
+
+        private void FirstPersonCameraRotation()
+        {
+            if (_input.look.sqrMagnitude >= _threshold && !LockCameraPosition)
+            {
+                float deltaTimeMultiplier = IsCurrentDeviceMouse ? 1.0f : Time.deltaTime;
+
+                _cinemachineTargetPitch += _input.look.y * FirstPersonRotationSpeed * deltaTimeMultiplier;
+                _rotationVelocity = _input.look.x * FirstPersonRotationSpeed * deltaTimeMultiplier;
+                transform.Rotate(Vector3.up * _rotationVelocity);
+            }
+
+            _cinemachineTargetYaw = transform.eulerAngles.y;
+            _cinemachineTargetPitch = ClampAngle(_cinemachineTargetPitch, FirstPersonBottomClamp, FirstPersonTopClamp);
+            ApplyCameraTargetRotation();
+        }
+
+        private void ApplyCameraTargetRotation()
+        {
+            if (PerspectiveMode == CameraMode.FirstPerson)
+            {
+                if (FirstPersonCameraTarget != null)
+                {
+                    FirstPersonCameraTarget.localRotation =
+                        Quaternion.Euler(_cinemachineTargetPitch, 0.0f, 0.0f);
+                }
+
+                if (CinemachineCameraTarget != null)
+                {
+                    CinemachineCameraTarget.transform.rotation =
+                        Quaternion.Euler(0.0f, _cinemachineTargetYaw, 0.0f);
+                }
+
+                return;
+            }
+
+            if (CinemachineCameraTarget != null)
+            {
+                CinemachineCameraTarget.transform.rotation =
+                    Quaternion.Euler(_cinemachineTargetPitch + CameraAngleOverride,
+                        _cinemachineTargetYaw, 0.0f);
+            }
         }
         public void SetVerticalVelocity(float v)
         {
@@ -378,8 +466,12 @@ namespace StarterAssets
 
 
             // set target speed based on move speed, sprint speed and if sprint is pressed
-            float baseWalkSpeed = MoveSpeed;
-            float baseSprintSpeed = SprintSpeed;
+            float baseWalkSpeed = PerspectiveMode == CameraMode.FirstPerson
+                ? FirstPersonMoveSpeed
+                : MoveSpeed;
+            float baseSprintSpeed = PerspectiveMode == CameraMode.FirstPerson
+                ? FirstPersonSprintSpeed
+                : SprintSpeed;
             bool isSprinting = _input.sprint;
 
             // 🔹 ถ้าอยู่ในน้ำ → ช้าลง
@@ -427,22 +519,30 @@ namespace StarterAssets
 
             // normalise input direction
             Vector3 inputDirection = new Vector3(_input.move.x, 0.0f, _input.move.y).normalized;
+            Vector3 targetDirection = Vector3.zero;
 
-            // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
-            // if there is a move input rotate player when the player is moving
-            if (_input.move != Vector2.zero)
+            if (PerspectiveMode == CameraMode.FirstPerson)
             {
-                _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
-                                  _mainCamera.transform.eulerAngles.y;
-                float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
-                    RotationSmoothTime);
-
-                // rotate to face input direction relative to camera position
-                transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+                if (_input.move != Vector2.zero)
+                    targetDirection = transform.right * _input.move.x + transform.forward * _input.move.y;
             }
+            else
+            {
+                // note: Vector2's != operator uses approximation so is not floating point error prone, and is cheaper than magnitude
+                // if there is a move input rotate player when the player is moving
+                if (_input.move != Vector2.zero)
+                {
+                    _targetRotation = Mathf.Atan2(inputDirection.x, inputDirection.z) * Mathf.Rad2Deg +
+                                      _mainCamera.transform.eulerAngles.y;
+                    float rotation = Mathf.SmoothDampAngle(transform.eulerAngles.y, _targetRotation, ref _rotationVelocity,
+                        RotationSmoothTime);
 
+                    // rotate to face input direction relative to camera position
+                    transform.rotation = Quaternion.Euler(0.0f, rotation, 0.0f);
+                }
 
-            Vector3 targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+                targetDirection = Quaternion.Euler(0.0f, _targetRotation, 0.0f) * Vector3.forward;
+            }
 
             // move the player
             _controller.Move(targetDirection.normalized * (_speed * Time.deltaTime) +
@@ -470,7 +570,7 @@ namespace StarterAssets
 
             DustFX.SetFloat(
                 "Speed",
-                walking ? realSpeed / SprintSpeed : 0f
+                walking ? realSpeed / GetCurrentSprintSpeed() : 0f
             );
         }
         public void ForceResetYaw(float yaw)
@@ -478,11 +578,7 @@ namespace StarterAssets
             _cinemachineTargetYaw = yaw;
             _cinemachineTargetPitch = 0f;
 
-            if (CinemachineCameraTarget != null)
-            {
-                CinemachineCameraTarget.transform.localRotation =
-                Quaternion.Euler(0f, yaw, 0f);
-            }
+            ApplyCameraTargetRotation();
         }
         private void HandleFootsteps()
         {
@@ -496,7 +592,7 @@ namespace StarterAssets
                 PlayFootstep();
 
                 // 🔥 ปรับความเร็วตามการเดิน/วิ่ง
-                float speedPercent = Mathf.Clamp01(_speed / SprintSpeed);
+                float speedPercent = Mathf.Clamp01(_speed / GetCurrentSprintSpeed());
 
                 float dynamicRate =
                     Mathf.Lerp(FootstepRate, FootstepRate * 0.5f, speedPercent);
@@ -523,6 +619,14 @@ namespace StarterAssets
                 transform.position
             );
         }
+
+        float GetCurrentSprintSpeed()
+        {
+            return PerspectiveMode == CameraMode.FirstPerson
+                ? FirstPersonSprintSpeed
+                : SprintSpeed;
+        }
+
         private void JumpAndGravity()
         {
             bool justJumped = false;

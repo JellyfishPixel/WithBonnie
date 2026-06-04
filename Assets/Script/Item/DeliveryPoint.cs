@@ -14,6 +14,8 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
 
     BoxCore spawnedBoxForTest;
     int spawnedSlotIndex = -1;
+    PlayerInteractionSystem currentInteractor;
+    readonly System.Collections.Generic.HashSet<Collider> currentInteractorColliders = new();
 
      string successMessage = "Delivery successful!!";
      string noBoxMessage = "You don't have any items for this destination.";
@@ -91,6 +93,8 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
         if (interaction == null)
             return;
 
+        TrackInteractor(interaction, other);
+
         if (autoSpawnBoxOnEnter && TryAutoSpawnBoxFromInventory(other))
         {
             if (hideConfirmUIWhenAutoSpawn && DeliveryConfirmUI.Instance != null)
@@ -113,11 +117,32 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
 
     private void OnTriggerExit(Collider other)
     {
-        if (GetInteractionFrom(other) == null)
+        PlayerInteractionSystem interaction = GetInteractionFrom(other);
+        if (interaction == null)
             return;
 
-        DeliveryConfirmUI.Instance?.ForceHide();
-        AddSalesPopupUI.HideSticky();
+        if (currentInteractor == interaction)
+        {
+            currentInteractorColliders.Remove(other);
+
+            if (currentInteractorColliders.Count == 0)
+            {
+                currentInteractor = null;
+                DeliveryConfirmUI.Instance?.ForceHide();
+                AddSalesPopupUI.HideSticky();
+            }
+        }
+    }
+
+    private void Update()
+    {
+        if (currentInteractor == null)
+            return;
+
+        if (!Input.GetKeyDown(currentInteractor.storeBoxKey))
+            return;
+
+        HandleDeliveryKey(currentInteractor);
     }
 
     private void OnTriggerStay(Collider other)
@@ -126,23 +151,47 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
         if (interaction == null)
             return;
 
-        if (Input.GetKeyDown(interaction.storeBoxKey) &&
-            spawnedBoxForTest == null &&
-            TryDeliverHeldBox(interaction))
-        {
+        TrackInteractor(interaction, other);
+    }
+
+    void HandleDeliveryKey(PlayerInteractionSystem interaction)
+    {
+        if (interaction == null)
             return;
-        }
 
         if (spawnedBoxForTest == null)
+        {
+            if (TryDeliverHeldBox(interaction))
+                return;
+
+            if (interaction.HeldObject != null)
+                return;
+
+            if (HasItemToDeliver())
+                ConfirmDelivery();
+
             return;
+        }
 
         if (interaction.HeldObject != spawnedBoxForTest.gameObject)
             return;
 
-        if (Input.GetKeyDown(interaction.storeBoxKey))
+        PlaceHeldBoxForDelivery(interaction);
+    }
+
+    void TrackInteractor(PlayerInteractionSystem interaction, Collider sourceCollider)
+    {
+        if (interaction == null)
+            return;
+
+        if (currentInteractor != interaction)
         {
-            PlaceHeldBoxForDelivery(interaction);
+            currentInteractor = interaction;
+            currentInteractorColliders.Clear();
         }
+
+        if (sourceCollider != null)
+            currentInteractorColliders.Add(sourceCollider);
     }
 
     PlayerInteractionSystem GetInteractionFrom(Collider other)
@@ -175,7 +224,7 @@ public class DeliveryPoint : MonoBehaviour, IInteractable
             return false;
 
         DeliveryItemData itemData = heldBox.CurrentItemData;
-        if (itemData == null || itemData.destinationId != destinationId)
+        if (itemData == null || !DeliveryDestinationId.Matches(itemData.destinationId, destinationId))
             return false;
 
         if (heldBox.Step != BoxStep.Labeled)

@@ -39,7 +39,7 @@ public class DestinationRegistry : MonoBehaviour
     {
         foreach (var p in points)
         {
-            if (p.id == id)
+            if (DeliveryDestinationId.Matches(p.id, id))
                 return p.point;
         }
         return null;

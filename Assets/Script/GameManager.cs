@@ -313,7 +313,7 @@ public class GameManager : MonoBehaviour
         DeliveryRecord rec = null;
         foreach (var r in activeBoxes)
         {
-            if (r != null && r.destinationId == destinationId)
+            if (r != null && DeliveryDestinationId.Matches(r.destinationId, destinationId))
             {
                 rec = r;
                 break;
@@ -406,7 +406,7 @@ public class GameManager : MonoBehaviour
             packageData = package,
             data = package.itemData,
             dayCreated = currentDay,
-            destinationId = package.destinationId
+            destinationId = DeliveryDestinationId.Normalize(package.destinationId)
         };
 
         Debug.Log($"[GM] NewDelivery item={record.data.itemName}, destId={record.destinationId}");

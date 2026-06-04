@@ -9,6 +9,7 @@ public enum VehicleKind
 
 [RequireComponent(typeof(Collider))]
 [RequireComponent(typeof(Rigidbody))]
+[DefaultExecutionOrder(-50)]
 public class VehicleController : MonoBehaviour, IInteractable
 {
     public static VehicleController ActiveVehicle { get; private set; }
@@ -42,6 +43,14 @@ public class VehicleController : MonoBehaviour, IInteractable
     Transform driverTransform;
     Transform originalDriverParent;
     Vector3 originalDriverScale;
+    bool originalIsKinematic;
+    bool originalUseGravity;
+    RigidbodyInterpolation originalInterpolation;
+    CollisionDetectionMode originalCollisionDetectionMode;
+    float forwardInput;
+    float turnInput;
+    bool airplaneUpInput;
+    bool airplaneDownInput;
     float waterSurfaceY;
     float lastWaterContactTime = -999f;
 
@@ -55,6 +64,8 @@ public class VehicleController : MonoBehaviour, IInteractable
         rb = GetComponent<Rigidbody>();
         rb.useGravity = kind == VehicleKind.Car || kind == VehicleKind.Boat;
         rb.constraints = RigidbodyConstraints.FreezeRotationX | RigidbodyConstraints.FreezeRotationZ;
+        if (rb.interpolation == RigidbodyInterpolation.None)
+            rb.interpolation = RigidbodyInterpolation.Interpolate;
 
         var col = GetComponent<Collider>();
         col.isTrigger = false;
@@ -66,7 +77,13 @@ public class VehicleController : MonoBehaviour, IInteractable
             return;
 
         if (Input.GetKeyDown(enterExitKey))
+        {
             ExitVehicle();
+            return;
+        }
+
+        CacheDriveInput();
+        Drive(Time.deltaTime, true);
     }
 
     void LateUpdate()
@@ -76,13 +93,17 @@ public class VehicleController : MonoBehaviour, IInteractable
 
     void FixedUpdate()
     {
+        if (IsOccupied)
+            return;
+
         if (kind == VehicleKind.Boat)
             KeepBoatOnWater();
 
-        if (requireDriver && !IsOccupied)
+        if (requireDriver)
             return;
 
-        Drive();
+        CacheDriveInput();
+        Drive(Time.fixedDeltaTime, false);
     }
 
     public void Interact(PlayerInteractionSystem interactor, PlayerInteractionSystem.InteractionType interactionType)
@@ -122,11 +143,11 @@ public class VehicleController : MonoBehaviour, IInteractable
         movementLocker = interactor.GetComponent<PlayerMovementLocker>();
         ActiveVehicle = this;
 
+        PrepareRigidbodyForDriving();
         movementLocker?.Lock();
         interactor.LockMovement();
 
-        driverTransform.SetPositionAndRotation(GetSeatPosition(), transform.rotation);
-        driverTransform.localScale = originalDriverScale;
+        SyncDriverToSeat();
 
         AddSalesPopupUI.ShowSticky($"Driving {vehicleName}. Press E to exit.");
     }
@@ -144,6 +165,7 @@ public class VehicleController : MonoBehaviour, IInteractable
         exitingDriver.localScale = originalDriverScale;
         exitingDriver.SetPositionAndRotation(GetExitPosition(), Quaternion.Euler(0f, transform.eulerAngles.y, 0f));
 
+        RestoreRigidbodyAfterDriving();
         exitingLocker?.Unlock();
         exitingInteraction.UnlockMovement();
         CameraModeManager.Instance?.ResetActiveControllerOneFrame();
@@ -167,7 +189,15 @@ public class VehicleController : MonoBehaviour, IInteractable
         ExitVehicle();
     }
 
-    void Drive()
+    void CacheDriveInput()
+    {
+        forwardInput = Input.GetAxisRaw("Vertical");
+        turnInput = Input.GetAxisRaw("Horizontal");
+        airplaneUpInput = Input.GetKey(KeyCode.Space);
+        airplaneDownInput = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
+    }
+
+    void Drive(float deltaTime, bool immediate)
     {
         if (kind == VehicleKind.Boat && !RefreshBoatWaterContact(transform.position))
         {
@@ -175,39 +205,74 @@ public class VehicleController : MonoBehaviour, IInteractable
             return;
         }
 
-        float forwardInput = Input.GetAxisRaw("Vertical");
-        float turnInput = Input.GetAxisRaw("Horizontal");
-
+        Vector3 currentPosition = immediate ? transform.position : rb.position;
+        Quaternion currentRotation = immediate ? transform.rotation : rb.rotation;
         float speed = forwardInput >= 0f ? moveSpeed : reverseSpeed;
-        Vector3 move = transform.forward * (forwardInput * speed * Time.fixedDeltaTime);
+        Vector3 move = currentRotation * Vector3.forward * (forwardInput * speed * deltaTime);
 
         if (kind == VehicleKind.Airplane)
         {
-            if (Input.GetKey(KeyCode.Space))
-                move += Vector3.up * (airplaneVerticalSpeed * Time.fixedDeltaTime);
+            if (airplaneUpInput)
+                move += Vector3.up * (airplaneVerticalSpeed * deltaTime);
 
-            if (Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl))
-                move += Vector3.down * (airplaneVerticalSpeed * Time.fixedDeltaTime);
+            if (airplaneDownInput)
+                move += Vector3.down * (airplaneVerticalSpeed * deltaTime);
         }
 
+        Vector3 nextPosition = currentPosition + move;
         if (kind == VehicleKind.Boat)
         {
             rb.useGravity = false;
-            Vector3 candidatePosition = rb.position + move;
 
-            if (!TryGetWaterSurfaceY(candidatePosition, out float candidateSurfaceY))
+            if (!TryGetWaterSurfaceY(nextPosition, out float candidateSurfaceY))
             {
-                move = Vector3.zero;
+                nextPosition = currentPosition;
             }
             else
             {
-                move.y = candidateSurfaceY + boatFloatHeight - rb.position.y;
+                nextPosition.y = candidateSurfaceY + boatFloatHeight;
             }
         }
 
-        Quaternion turn = Quaternion.Euler(0f, turnInput * turnSpeed * Time.fixedDeltaTime, 0f);
-        rb.MoveRotation(rb.rotation * turn);
-        rb.MovePosition(rb.position + move);
+        Quaternion turn = Quaternion.Euler(0f, turnInput * turnSpeed * deltaTime, 0f);
+        Quaternion nextRotation = currentRotation * turn;
+
+        if (immediate)
+        {
+            rb.position = nextPosition;
+            rb.rotation = nextRotation;
+            transform.SetPositionAndRotation(nextPosition, nextRotation);
+            Physics.SyncTransforms();
+            return;
+        }
+
+        rb.MoveRotation(nextRotation);
+        rb.MovePosition(nextPosition);
+    }
+
+    void PrepareRigidbodyForDriving()
+    {
+        originalIsKinematic = rb.isKinematic;
+        originalUseGravity = rb.useGravity;
+        originalInterpolation = rb.interpolation;
+        originalCollisionDetectionMode = rb.collisionDetectionMode;
+
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        rb.useGravity = false;
+        rb.isKinematic = true;
+        rb.interpolation = RigidbodyInterpolation.None;
+        rb.collisionDetectionMode = CollisionDetectionMode.ContinuousSpeculative;
+    }
+
+    void RestoreRigidbodyAfterDriving()
+    {
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        rb.isKinematic = originalIsKinematic;
+        rb.useGravity = originalUseGravity;
+        rb.interpolation = originalInterpolation;
+        rb.collisionDetectionMode = originalCollisionDetectionMode;
     }
 
     void OnTriggerEnter(Collider other)
@@ -334,7 +399,6 @@ public class VehicleController : MonoBehaviour, IInteractable
         if (!IsOccupied || driverTransform == null)
             return;
 
-        driverTransform.SetParent(null, true);
         driverTransform.localScale = originalDriverScale == Vector3.zero ? Vector3.one : originalDriverScale;
         SyncDriverToSeat();
     }
@@ -344,7 +408,11 @@ public class VehicleController : MonoBehaviour, IInteractable
         if (!IsOccupied || driverTransform == null)
             return;
 
-        driverTransform.SetPositionAndRotation(GetSeatPosition(), transform.rotation);
+        Vector3 seatPosition = GetSeatPosition();
+        Quaternion seatRotation = seatPoint != null ? seatPoint.rotation : transform.rotation;
+
+        driverTransform.SetPositionAndRotation(seatPosition, seatRotation);
+        driverTransform.localScale = originalDriverScale == Vector3.zero ? Vector3.one : originalDriverScale;
     }
 
     Vector3 GetSeatPosition()
